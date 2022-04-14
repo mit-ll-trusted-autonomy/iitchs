@@ -1,0 +1,126 @@
+# DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
+
+# This material is based upon work supported by the Under Secretary of Defense for 
+# Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any 
+# opinions, findings, conclusions or recommendations expressed in this material 
+# are those of the author(s) and do not necessarily reflect the views of the Under 
+# Secretary of Defense for Research and Engineering.
+
+# (C) 2021 Massachusetts Institute of Technology.
+
+# Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+
+# The software/firmware is provided to you on an As-Is basis
+
+# Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+# Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. 
+# Government rights in this work are defined by DFARS 252.227-7013 or DFARS 
+# 252.227-7014 as detailed above. Use of this work other than as specifically 
+# authorized by the U.S. Government may violate any copyrights that exist in this 
+# work.
+
+# SPDX-License-Identifier: BSD-3-Clause
+
+!Ts
+name: demo_grave
+directed: true
+multi: false
+init: []
+final: []
+graph:
+  nodes:
+    q0:
+      prop: !!set {A: null}
+      shape: [[0,35], [0,50], [30, 50], [30, 35]]
+      color: yellow
+    q1:
+      prop: !!set {B: null}
+      shape: [[0, 0], [0, 15], [30, 15], [30,0]]
+      color: yellow
+    q2:
+      prop: !!set {C: null}
+      shape: [[50, 20], [50, 50], [70,50], [70, 20]]
+      color: yellow
+    q3:
+      prop: !!set {D: null}
+      shape: [[80, 0], [80, 20], [100, 20], [100, 0]]
+      color: red
+    q4:
+      prop: !!set {R1: null}
+      shape: [[0, 15], [0, 35], [30, 35], [30, 15]]
+      color: white
+    q5:
+      prop: !!set {R2: null}
+      shape: [[30,0], [30,35], [50,35], [50,0]]
+      color: white
+    q6:
+      prop: !!set {R3: null}
+      shape: [[50,0], [50,20], [80,20], [80,0]]
+      color: white
+    q7:
+      prop: !!set {R4: null}
+      shape: [[70,20], [70,50], [100,50], [100,20]]
+      color: white
+
+    q8:
+      prop: !!set {obs: null}
+      shape: [[30,35], [30,50], [50,50], [50,35]]
+      color: black
+    q9:
+      prop: !!set {grave: null}
+      shape: [[-1,-1], [-1,-1], [-1,-1], [-1,-1]]
+      color: grey
+
+  nogo_states: [q8]
+
+  edges:
+  - [q0, q0, {weight: 1}]
+  - [q1, q1, {weight: 1}]
+  - [q2, q2, {weight: 1}]
+  - [q3, q3, {weight: 1}]
+  - [q4, q4, {weight: 1}]
+  - [q5, q5, {weight: 1}]
+  - [q6, q6, {weight: 1}]
+  - [q7, q7, {weight: 1}]
+  - [q9, q9, {weight: 1}]
+  
+  - [q0, q9, {weight: 1}]
+  - [q1, q9, {weight: 1}]
+  - [q2, q9, {weight: 1}]
+  - [q3, q9, {weight: 1}]
+  - [q4, q9, {weight: 1}]
+  - [q5, q9, {weight: 1}]
+  - [q6, q9, {weight: 1}]
+  - [q7, q9, {weight: 1}]
+  
+  # - [q9, q0, {weight: 125}]
+  # - [q9, q1, {weight: 125}]
+  # - [q9, q2, {weight: 125}]
+  # - [q9, q3, {weight: 125}]
+  # - [q9, q4, {weight: 125}]
+  # - [q9, q5, {weight: 125}]
+  # - [q9, q6, {weight: 125}]
+  # - [q9, q7, {weight: 125}]
+  
+  - [q0, q4, {weight: 5}]
+  - [q4, q0, {weight: 5}]
+  - [q1, q5, {weight: 6}]
+  - [q5, q1, {weight: 6}]
+  - [q2, q6, {weight: 6}]
+  - [q6, q2, {weight: 6}]
+  - [q2, q7, {weight: 6}]
+  - [q7, q2, {weight: 6}]
+  - [q3, q7, {weight: 6}]
+  - [q7, q3, {weight: 6}]
+  - [q5, q4, {weight: 6}]
+  - [q4, q5, {weight: 6}]
+  - [q4, q1, {weight: 5}]
+  - [q1, q4, {weight: 5}]
+  - [q2, q5, {weight: 6}]
+  - [q5, q2, {weight: 6}]
+  - [q5, q6, {weight: 6}]
+  - [q6, q5, {weight: 6}]
+  - [q7, q6, {weight: 7}]
+  - [q6, q7, {weight: 7}]
+  - [q3, q6, {weight: 5}]
+  - [q6, q3, {weight: 5}]

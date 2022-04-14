@@ -1,0 +1,9 @@
+[submodule "src/python-stl"]
+	path = src/python_stl
+	url = git@github.com:jusevitch-mitll/python-stl.git
+[submodule "src/catl"]
+	path = src/catl
+	url = git@github.com:wasserfeder/catl.git
+[submodule "src/lomap"]
+	path = src/lomap
+	url = git@github.com:jusevitch-mitll/lomap.git

@@ -1,0 +1,114 @@
+#LL Copyright
+#This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.
+#
+#© 2019 Massachusetts Institute of Technology.
+#
+#The software/firmware is provided to you on an As-Is basis
+#
+
+#Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+#LL Copyright
+
+# DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
+
+# This material is based upon work supported by the Under Secretary of Defense for 
+# Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any 
+# opinions, findings, conclusions or recommendations expressed in this material 
+# are those of the author(s) and do not necessarily reflect the views of the Under 
+# Secretary of Defense for Research and Engineering.
+
+# (C) 2021 Massachusetts Institute of Technology.
+
+# Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+
+# The software/firmware is provided to you on an As-Is basis
+
+# Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+# Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. 
+# Government rights in this work are defined by DFARS 252.227-7013 or DFARS 
+# 252.227-7014 as detailed above. Use of this work other than as specifically 
+# authorized by the U.S. Government may violate any copyrights that exist in this 
+# work.
+
+# SPDX-License-Identifier: BSD-3-Clause
+
+!Ts
+name: Small farm
+directed: true
+multi: false
+init: []
+final: []
+graph:
+  nodes:
+    q1:
+      prop: !!set {blue: null}
+      shape: [[0, 0], [0, 10], [10, 10], [10, 0]]
+      color: blue
+    q2:
+      prop: !!set {white: null}
+      shape: [[10, 0], [10, 10], [20, 10], [20, 0]]
+      color: white
+    q3:
+      prop: !!set {white: null}
+      shape: [[20, 0], [20, 10], [30, 10], [30, 0]]
+      color: white
+    q4:
+      prop: !!set {white: null}
+      shape: [[0, 10], [0, 20], [10, 20], [10, 10]]
+      color: white
+    q5:
+      prop: !!set {white: null}
+      shape: [[10, 10], [10, 20], [20, 20], [20, 10]]
+      color: white
+    q6:
+      prop: !!set {purple: null}
+      shape: [[20, 10], [20, 20], [30, 20], [30, 10]]
+      color: purple
+    q7:
+      prop: !!set {grave: null}
+      shape: [[-1,-1], [-1,-1], [-1,-1], [-1,-1]]
+      color: grey
+
+  edges:
+  - [q1, q1, {weight: 1}]
+  - [q2, q2, {weight: 1}]
+  - [q3, q3, {weight: 1}]
+  - [q4, q4, {weight: 1}]
+  - [q5, q5, {weight: 1}]
+  - [q6, q6, {weight: 1}]
+  - [q7, q7, {weight: 1}]
+
+  - [q1, q7, {weight: 1}]
+  - [q2, q7, {weight: 1}]
+  - [q3, q7, {weight: 1}]
+  - [q4, q7, {weight: 1}]
+  - [q5, q7, {weight: 1}]
+  - [q6, q7, {weight: 1}]
+
+  - [q7, q1, {weight: 1000}]
+  - [q7, q2, {weight: 1000}]
+  - [q7, q3, {weight: 1000}]
+  - [q7, q4, {weight: 1000}]
+  - [q7, q5, {weight: 1000}]
+  - [q7, q6, {weight: 1000}]
+
+  # horizontal bottom row
+  - [q1, q2, {weight: 1}]
+  - [q2, q1, {weight: 1}]
+  - [q2, q3, {weight: 1}]
+  - [q3, q2, {weight: 1}]
+
+  # horizontal top row
+  - [q4, q5, {weight: 1}]
+  - [q5, q4, {weight: 1}]
+  - [q5, q6, {weight: 1}]
+  - [q6, q5, {weight: 1}]
+
+  # vertical
+  - [q1, q4, {weight: 1}]
+  - [q4, q1, {weight: 1}]
+  - [q2, q5, {weight: 1}]
+  - [q5, q2, {weight: 1}]
+  - [q3, q6, {weight: 1}]
+  - [q6, q3, {weight: 1}]
+  

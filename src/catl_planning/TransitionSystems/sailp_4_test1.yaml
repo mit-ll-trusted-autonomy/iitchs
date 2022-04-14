@@ -1,0 +1,164 @@
+
+#LL Copyright
+#This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.
+
+#
+
+#© 2019 Massachusetts Institute of Technology.
+
+#
+
+#The software/firmware is provided to you on an As-Is basis
+
+#
+
+#Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+#LL Copyright
+
+# DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
+
+# This material is based upon work supported by the Under Secretary of Defense for 
+# Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any 
+# opinions, findings, conclusions or recommendations expressed in this material 
+# are those of the author(s) and do not necessarily reflect the views of the Under 
+# Secretary of Defense for Research and Engineering.
+
+# (C) 2021 Massachusetts Institute of Technology.
+
+# Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+
+# The software/firmware is provided to you on an As-Is basis
+
+# Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+# Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. 
+# Government rights in this work are defined by DFARS 252.227-7013 or DFARS 
+# 252.227-7014 as detailed above. Use of this work other than as specifically 
+# authorized by the U.S. Government may violate any copyrights that exist in this 
+# work.
+
+# SPDX-License-Identifier: BSD-3-Clause
+
+!Ts
+name: Large farm
+directed: true
+multi: false
+init: []
+final: []
+graph:
+  nodes:
+    q0:
+      prop: !!set {grave: null}
+      shape: [[-1,-1], [-1,-1], [-1,-1], [-1,-1]]
+      color: grey
+    q1:
+      prop: !!set {DA: null}
+      shape: [[0, 0], [0, 20], [37.5, 20], [37.5, 0]]
+      color: grey
+    q2:
+      prop: !!set {SA: null}
+      shape: [[0, 20], [0, 50], [37.50, 50], [37.5, 20]]
+      color: blue
+    q3:
+      prop: !!set {empty: null}
+      shape: [[37.5,20], [37.5,50], [56.25,50], [56.25,20]]
+      color: white
+    q4:
+      prop: !!set {DA: null}
+      shape: [[37.5,0], [37.5,20], [75, 20], [75, 0]]
+      color: grey
+    q5:
+      prop: !!set {DC: null}
+      shape: [[56.25, 20], [56.25, 50], [93.75, 50], [93.75, 20]]
+      color: red
+    q6:
+      prop: !!set {DB: null}
+      shape: [[75, 0], [75, 20], [112.5, 20], [112.5, 0]]
+      color: orange
+    q7:
+      prop: !!set {empty: null}
+      shape: [[93.75, 20], [93.75, 35], [112.5, 35], [112.5, 20]]
+      color: white
+    q8:
+      prop: !!set {obs: null}
+      shape: [[93.75, 35], [93.75, 50], [112.5, 50], [112.5, 35]]
+      color: black
+    q9:
+      prop: !!set {SB: null}
+      shape: [[112.5, 20], [112.5, 50], [150, 50], [150, 20]]
+      color: blue
+    q10:
+      prop: !!set {DB: null}
+      shape: [[112.5, 0], [112.5, 20], [150, 20], [150, 0]]
+      color: orange
+
+
+  edges:
+  - [q0, q0, {weight: 1}]
+  - [q1, q1, {weight: 1}]
+  - [q2, q2, {weight: 1}]
+  - [q3, q3, {weight: 1}]
+  - [q4, q4, {weight: 1}]
+  - [q5, q5, {weight: 1}]
+  - [q6, q6, {weight: 1}]
+  - [q7, q7, {weight: 1}]
+  - [q9, q9, {weight: 1}]
+  - [q10, q10, {weight: 1}]
+
+
+  - [q1, q0, {weight: 1}]
+  - [q2, q0, {weight: 1}]
+  - [q3, q0, {weight: 1}]
+  - [q4, q0, {weight: 1}]
+  - [q5, q0, {weight: 1}]
+  - [q6, q0, {weight: 1}]
+  - [q7, q0, {weight: 1}]
+  - [q9, q0, {weight: 1}]
+  - [q10, q0, {weight: 1}]
+  - [q0, q1, {weight: 1000}]
+  - [q0, q2, {weight: 1000}]
+  - [q0, q3, {weight: 1000}]
+  - [q0, q4, {weight: 1000}]
+  - [q0, q5, {weight: 1000}]
+  - [q0, q6, {weight: 1000}]
+  - [q0, q7, {weight: 1000}]
+  - [q0, q9, {weight: 1000}]
+  - [q0, q10, {weight: 1000}]
+
+  - [q1, q2, {weight: 5}]
+  - [q2, q1, {weight: 5}]
+
+  - [q1, q4, {weight: 6}]
+  - [q4, q1, {weight: 6}]
+
+  - [q2, q3, {weight: 5}]
+  - [q3, q2, {weight: 5}]
+
+  - [q3, q4, {weight: 5}]
+  - [q4, q3, {weight: 5}]
+
+  - [q3, q5, {weight: 6}]
+  - [q5, q3, {weight: 6}]
+
+  - [q4, q5, {weight: 6}]
+  - [q5, q4, {weight: 6}]
+  
+  - [q4, q6, {weight: 7}]
+  - [q6, q4, {weight: 7}]
+  
+  - [q5, q7, {weight: 7}]
+  - [q7, q5, {weight: 7}]
+
+  - [q5, q6, {weight: 7}]
+  - [q6, q5, {weight: 7}]
+
+  - [q6, q10, {weight: 7}]
+  - [q10, q6, {weight: 7}]
+
+  - [q6, q7, {weight: 5}]
+  - [q7, q6, {weight: 5}]
+
+  - [q7, q9, {weight: 6}]
+  - [q9, q7, {weight: 6}]
+
+  - [q9, q10, {weight: 6}]
+  - [q10, q9, {weight: 6}]

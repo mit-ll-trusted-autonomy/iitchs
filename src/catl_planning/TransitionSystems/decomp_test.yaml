@@ -1,0 +1,326 @@
+#LL Copyright
+#This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.
+#
+#© 2019 Massachusetts Institute of Technology.
+#
+#The software/firmware is provided to you on an As-Is basis
+#
+#Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+#LL Copyright
+
+# DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
+
+# This material is based upon work supported by the Under Secretary of Defense for 
+# Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any 
+# opinions, findings, conclusions or recommendations expressed in this material 
+# are those of the author(s) and do not necessarily reflect the views of the Under 
+# Secretary of Defense for Research and Engineering.
+
+# (C) 2021 Massachusetts Institute of Technology.
+
+# Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+
+# The software/firmware is provided to you on an As-Is basis
+
+# Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+# Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. 
+# Government rights in this work are defined by DFARS 252.227-7013 or DFARS 
+# 252.227-7014 as detailed above. Use of this work other than as specifically 
+# authorized by the U.S. Government may violate any copyrights that exist in this 
+# work.
+
+# SPDX-License-Identifier: BSD-3-Clause
+
+!Ts
+name: Decomp TS
+directed: true
+multi: false
+init: []
+final: []
+graph:
+  nodes:
+    q0:
+      prop: !!set {Z: null}
+      shape: [[0, 0], [0, 10], [10, 10], [10, 0]]
+      color: grey
+    q1:
+      prop: !!set {Z: null}
+      shape: [[10, 0], [10, 10], [20, 10], [20, 0]]
+      color: white
+    q2:
+      prop: !!set {Z: null}
+      shape: [[20, 0], [20, 10], [30, 10], [30, 0]]
+      color: white
+    q3:
+      prop: !!set {Z: null}
+      shape: [[30, 0], [30, 10], [40, 10], [40, 0]]
+      color: white
+    q4:
+      prop: !!set {Z: null}
+      shape: [[40, 0], [40, 10], [50, 10], [50, 0]]
+      color: white
+    q5:
+      prop: !!set {Z: null}
+      shape: [[0, 10], [0, 20], [10, 20], [10, 10]]
+      color: white
+    q6:
+      prop: !!set {Z: null}
+      shape: [[10, 10], [10, 20], [20, 20], [20, 10]]
+      color: white
+    q7:
+      prop: !!set {A: null}
+      shape: [[20, 10], [20, 20], [30, 20], [30, 10]]
+      color: blue
+    q8:
+      prop: !!set {Z: null}
+      shape: [[30, 10], [30, 20], [40, 20], [40, 10]]
+      color: white
+    q9:
+      prop: !!set {Z: null}
+      shape: [[40, 10], [40, 20], [50, 20], [50, 10]]
+      color: white
+    q10:
+      prop: !!set {Z: null}
+      shape: [[0, 20], [0, 30], [10, 30], [10, 20]]
+      color: white
+    q11:
+      prop: !!set {B: null}
+      shape: [[10, 20], [10, 30], [20, 30], [20, 20]]
+      color: orange
+    q12:
+      prop: !!set {Z: null}
+      shape: [[20, 20], [20, 30], [30, 30], [30, 20]]
+      color: white
+    q13:
+      prop: !!set {Z: null}
+      shape: [[30, 20], [30, 30], [40, 30], [40, 20]]
+      color: white
+    q14:
+      prop: !!set {Z: null}
+      shape: [[40, 20], [40, 30], [50, 30], [50, 20]]
+      color: white
+    q15:
+      prop: !!set {Z: null}
+      shape: [[0, 30], [0, 40], [10, 40], [10, 30]]
+      color: white
+    q16:
+      prop: !!set {C: null}
+      shape: [[10, 30], [10, 40], [20, 40], [20, 30]]
+      color: red
+    q17:
+      prop: !!set {Z: null}
+      shape: [[20, 30], [20, 40], [30, 40], [30, 30]]
+      color: white
+    q18:
+      prop: !!set {Z: null}
+      shape: [[30, 30], [30, 40], [40, 40], [40, 30]]
+      color: white
+    q19:
+      prop: !!set {Z: null}
+      shape: [[40, 30], [40, 40], [50, 40], [50, 30]]
+      color: white
+    q20:
+      prop: !!set {Z: null}
+      shape: [[0, 40], [0, 50], [10, 50], [10, 40]]
+      color: white
+    q21:
+      prop: !!set {Z: null}
+      shape: [[10, 40], [10, 50], [20, 50], [20, 40]]
+      color: white
+    q22:
+      prop: !!set {D: null}
+      shape: [[20, 40], [20, 50], [30, 50], [30, 40]]
+      color: green
+    q23:
+      prop: !!set {Z: null}
+      shape: [[30, 40], [30, 50], [40, 50], [40, 40]]
+      color: white
+    q24:
+      prop: !!set {Z: null}
+      shape: [[40, 40], [40, 50], [50, 50], [50, 40]]
+      color: white
+    q25:
+      prop: !!set {grave: null}
+      shape: [[-1,-1], [-1,-1], [-1,-1], [-1,-1]]
+      color: grey
+
+  edges:
+# horizontal row 0
+  - [q0, q1, {weight: 1}]
+  - [q1, q2, {weight: 1}]
+  - [q2, q3, {weight: 1}]
+  - [q3, q4, {weight: 1}]
+  - [q1, q0, {weight: 1}]
+  - [q2, q1, {weight: 1}]
+  - [q3, q2, {weight: 1}]
+  - [q4, q3, {weight: 1}]
+
+# horizontal row 1
+  - [q5, q6, {weight: 1}]
+  - [q6, q7, {weight: 1}]
+  - [q7, q8, {weight: 1}]
+  - [q8, q9, {weight: 1}]
+  - [q6, q5, {weight: 1}]
+  - [q7, q6, {weight: 1}]
+  - [q8, q7, {weight: 1}]
+  - [q9, q8, {weight: 1}]
+
+# horizontal row 2
+  - [q10, q11, {weight: 1}]
+  - [q11, q12, {weight: 1}]
+  - [q12, q13, {weight: 1}]
+  - [q13, q14, {weight: 1}]
+  - [q11, q10, {weight: 1}]
+  - [q12, q11, {weight: 1}]
+  - [q13, q12, {weight: 1}]
+  - [q14, q13, {weight: 1}]
+
+# horizontal row 3
+  - [q15, q16, {weight: 1}]
+  - [q16, q17, {weight: 1}]
+  - [q17, q18, {weight: 1}]
+  - [q18, q19, {weight: 1}]
+  - [q16, q15, {weight: 1}]
+  - [q17, q16, {weight: 1}]
+  - [q18, q17, {weight: 1}]
+  - [q19, q18, {weight: 1}]
+
+# horizontal row 4
+  - [q20, q21, {weight: 1}]
+  - [q21, q22, {weight: 1}]
+  - [q22, q23, {weight: 1}]
+  - [q23, q24, {weight: 1}]
+  - [q21, q20, {weight: 1}]
+  - [q22, q21, {weight: 1}]
+  - [q23, q22, {weight: 1}]
+  - [q24, q23, {weight: 1}]
+
+# vertical row 0 to row 1
+  - [q0, q5, {weight: 1}]
+  - [q1, q6, {weight: 1}]
+  - [q2, q7, {weight: 1}]
+  - [q3, q8, {weight: 1}]
+  - [q4, q9, {weight: 1}]
+  - [q5, q0, {weight: 1}]
+  - [q6, q1, {weight: 1}]
+  - [q7, q2, {weight: 1}]
+  - [q8, q3, {weight: 1}]
+  - [q9, q4, {weight: 1}]
+
+# vertical row 1 to row 2
+  - [q10, q5, {weight: 1}]
+  - [q11, q6, {weight: 1}]
+  - [q12, q7, {weight: 1}]
+  - [q13, q8, {weight: 1}]
+  - [q14, q9, {weight: 1}]
+  - [q5, q10, {weight: 1}]
+  - [q6, q11, {weight: 1}]
+  - [q7, q12, {weight: 1}]
+  - [q8, q13, {weight: 1}]
+  - [q9, q14, {weight: 1}]
+
+# vertical row 2 to row 3
+  - [q10, q15, {weight: 1}]
+  - [q11, q16, {weight: 1}]
+  - [q12, q17, {weight: 1}]
+  - [q13, q18, {weight: 1}]
+  - [q14, q19, {weight: 1}]
+  - [q15, q10, {weight: 1}]
+  - [q16, q11, {weight: 1}]
+  - [q17, q12, {weight: 1}]
+  - [q18, q13, {weight: 1}]
+  - [q19, q14, {weight: 1}]
+
+# vertical row 3 to row 4
+  - [q20, q15, {weight: 1}]
+  - [q21, q16, {weight: 1}]
+  - [q22, q17, {weight: 1}]
+  - [q23, q18, {weight: 1}]
+  - [q24, q19, {weight: 1}]
+  - [q15, q20, {weight: 1}]
+  - [q16, q21, {weight: 1}]
+  - [q17, q22, {weight: 1}]
+  - [q18, q23, {weight: 1}]
+  - [q19, q24, {weight: 1}]
+
+# nodes to grave
+  - [q0, q25, {weight: 1}]
+  - [q1, q25, {weight: 1}]
+  - [q2, q25, {weight: 1}]
+  - [q3, q25, {weight: 1}]
+  - [q4, q25, {weight: 1}]
+  - [q5, q25, {weight: 1}]
+  - [q6, q25, {weight: 1}]
+  - [q7, q25, {weight: 1}]
+  - [q8, q25, {weight: 1}]
+  - [q9, q25, {weight: 1}]
+  - [q10, q25, {weight: 1}]
+  - [q11, q25, {weight: 1}]
+  - [q12, q25, {weight: 1}]
+  - [q13, q25, {weight: 1}]
+  - [q14, q25, {weight: 1}]
+  - [q15, q25, {weight: 1}]
+  - [q16, q25, {weight: 1}]
+  - [q17, q25, {weight: 1}]
+  - [q18, q25, {weight: 1}]
+  - [q19, q25, {weight: 1}]
+  - [q20, q25, {weight: 1}]
+  - [q21, q25, {weight: 1}]
+  - [q22, q25, {weight: 1}]
+  - [q23, q25, {weight: 1}]
+  - [q24, q25, {weight: 1}]
+
+# grave to nodes
+  - [q25, q0, {weight: 1000}]
+  - [q25, q1, {weight: 1000}]
+  - [q25, q2, {weight: 1000}]
+  - [q25, q3, {weight: 1000}]
+  - [q25, q4, {weight: 1000}]
+  - [q25, q5, {weight: 1000}]
+  - [q25, q6, {weight: 1000}]
+  - [q25, q7, {weight: 1000}]
+  - [q25, q8, {weight: 1000}]
+  - [q25, q9, {weight: 1000}]
+  - [q25, q10, {weight: 1000}]
+  - [q25, q11, {weight: 1000}]
+  - [q25, q12, {weight: 1000}]
+  - [q25, q13, {weight: 1000}]
+  - [q25, q14, {weight: 1000}]
+  - [q25, q15, {weight: 1000}]
+  - [q25, q16, {weight: 1000}]
+  - [q25, q17, {weight: 1000}]
+  - [q25, q18, {weight: 1000}]
+  - [q25, q19, {weight: 1000}]
+  - [q25, q20, {weight: 1000}]
+  - [q25, q21, {weight: 1000}]
+  - [q25, q22, {weight: 1000}]
+  - [q25, q23, {weight: 1000}]
+  - [q25, q24, {weight: 1000}]
+
+# self loops
+  - [q0, q0, {weight: 1}]
+  - [q1, q1, {weight: 1}]
+  - [q2, q2, {weight: 1}]
+  - [q3, q3, {weight: 1}]
+  - [q4, q4, {weight: 1}]
+  - [q5, q5, {weight: 1}]
+  - [q6, q6, {weight: 1}]
+  - [q7, q7, {weight: 1}]
+  - [q8, q8, {weight: 1}]
+  - [q9, q9, {weight: 1}]
+  - [q10, q10, {weight: 1}]
+  - [q11, q11, {weight: 1}]
+  - [q12, q12, {weight: 1}]
+  - [q13, q13, {weight: 1}]
+  - [q14, q14, {weight: 1}]
+  - [q15, q15, {weight: 1}]
+  - [q16, q16, {weight: 1}]
+  - [q17, q17, {weight: 1}]
+  - [q18, q18, {weight: 1}]
+  - [q19, q19, {weight: 1}]
+  - [q20, q20, {weight: 1}]
+  - [q21, q21, {weight: 1}]
+  - [q22, q22, {weight: 1}]
+  - [q23, q23, {weight: 1}]
+  - [q24, q24, {weight: 1}]
+  - [q25, q25, {weight: 1}]

@@ -1,0 +1,5 @@
+*.sw*
+__pycache__/
+OutputFiles/
+docker/*
+!docker/Dockerfile
