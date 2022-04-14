@@ -24,11 +24,11 @@ IITCHs may not be the best match for problems that
 
 # Citation Information
 
-Please use the following DOI reference number, published on Zenodo, when citing this software:
+<!--Please use the following DOI reference number, published on Zenodo, when citing this software:-->
 
-\[INSERT HERE WHEN WE HAVE PUBLIC GITHUB REPO URL\]
+<!--\[INSERT HERE WHEN WE HAVE PUBLIC GITHUB REPO URL\]-->
 
-Please also consider citing the following papers that establish the theoretical basis for IITCHS:
+Please consider citing the following papers that establish the theoretical basis for IITCHS:
 
 [Scalable and Robust Algorithms for Task-Based Coordination From High-Level Specifications (ScRATCHeS)](https://ieeexplore.ieee.org/document/9663414)
 
