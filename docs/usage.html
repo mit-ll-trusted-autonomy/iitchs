@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Creating Custom Scenarios." href="scenarios.html" />
+    <link rel="prev" title="Installation" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-simple-example">Running a Simple Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-options">Command Line Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-case-files">Example Case Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
+<div class="section" id="running-a-simple-example">
+<h2>Running a Simple Example<a class="headerlink" href="#running-a-simple-example" title="Permalink to this headline"></a></h2>
+<p>To run a simple example script, first activate your Pipenv environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ~/iitchs_base
+pipenv shell
+</pre></div>
+</div>
+<p>This will bring up a new shell with an activated virtualenv environment. You should see the letters <code class="docutils literal notranslate"><span class="pre">(iitchs_base)</span></code> at the front of your bash prompt.</p>
+<p>Next, navigate to <code class="docutils literal notranslate"><span class="pre">iitchs_base/src</span></code> and run the <code class="docutils literal notranslate"><span class="pre">main.py</span></code> script with the <code class="docutils literal notranslate"><span class="pre">case1</span></code> example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ~/iitchs_base/src
+python main.py run catl_planning.examples.case1
+</pre></div>
+</div>
+<p>You should begin seeing output printed to the screen, and then a Matplotlib image should appear.</p>
+<p>To exit the program, click anywhere on the figure or press any key.</p>
+</div>
+<div class="section" id="command-line-options">
+<h2>Command Line Options<a class="headerlink" href="#command-line-options" title="Permalink to this headline"></a></h2>
+<p>Case files can be called under two scenarios:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">run</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">run</span> <span class="pre">catl_planning.examples.case1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">decomp</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">decomp</span> <span class="pre">catl_planning.examples.decomp_test_small</span></code>)</p>
+<ul>
+<li><p>Attempts to decompose the problem into sub-specifications with sub-teams. This may fail if any of the decompositions are infeasible.</p></li>
+</ul>
+</li>
+</ul>
+<p>In addition, different optimization solvers can be specified from the command line using the <code class="docutils literal notranslate"><span class="pre">--solver</span></code> flag. The <code class="docutils literal notranslate"><span class="pre">--solver</span></code> flag and solver option must be passed immediately after the <code class="docutils literal notranslate"><span class="pre">run</span></code> or <code class="docutils literal notranslate"><span class="pre">decomp</span></code> command and before <code class="docutils literal notranslate"><span class="pre">catl_planning.examples.case1</span></code>. The solver options currently supported are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">scip</span></code> (<a class="reference external" href="https://www.scipopt.org/">SCIP</a> solver)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">gurobi</span></code> (<a class="reference external" href="https://www.gurobi.com/">Gurobi</a> solver using <a class="reference external" href="https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html">Gurobipy</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">gurobi_cmd</span></code> (<a class="reference external" href="https://www.gurobi.com/">Gurobi</a> solver using command line)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">pulp_cbc_cmd</span></code> (<a class="reference external" href="https://github.com/coin-or/Cbc">CBC</a> solver using PuLP’s built-in CBC binary)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">coin_cmd</span></code> (<a class="reference external" href="https://github.com/coin-or/Cbc">CBC</a> solver; same effect as calling <code class="docutils literal notranslate"><span class="pre">--solver</span> <span class="pre">pulp_cbc_cmd</span></code>)</p></li>
+</ul>
+<p>For example, calling the <code class="docutils literal notranslate"><span class="pre">run</span></code> scenario using Gurobi can be done with the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python main.py run --solver gurobi catl_planning.examples.case1
+</pre></div>
+</div>
+<p>Calling the <code class="docutils literal notranslate"><span class="pre">decomp</span></code> scenario using the SCIP solver:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python main.py decomp --solver scip catl_planning.examples.case1
+</pre></div>
+</div>
+<p>All <code class="docutils literal notranslate"><span class="pre">--solver</span></code> options are case-insensitive; e.g. <code class="docutils literal notranslate"><span class="pre">gurobi</span></code> and <code class="docutils literal notranslate"><span class="pre">GUROBI</span></code> will both call the Gurobi solver.</p>
+<p>If no <code class="docutils literal notranslate"><span class="pre">--solver</span></code> option is passed, the SCIP solver is used by default.</p>
+</div>
+<div class="section" id="example-case-files">
+<h2>Example Case Files<a class="headerlink" href="#example-case-files" title="Permalink to this headline"></a></h2>
+<p>Six example case files are currently included:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">case1.py</span></code>: Can be called using, e.g., <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">run</span> <span class="pre">catl_planning.examples.case1</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cs_two_region.py</span></code>: Can be called using, e.g., <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">run</span> <span class="pre">catl_planning.examples.cs_two_region</span></code>. Consists of a very simple transition system with two states and two agents.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cs_sailp_4_test1.py</span></code>: Can be called using, e.g., <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">run</span> <span class="pre">catl_planning.examples.cs_sailp_4_test1.py</span></code>. Consists of a transition system with ten states and four agent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">decomp_test.py</span></code>: Medium-sized example for decomposition, called with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">decomp</span> <span class="pre">catl_planning.examples.decomp_test</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">decomp_test_small.py</span></code>: A very small example for decomposition on the two region world, called with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">decomp</span> <span class="pre">catl_planning.examples.decomp_test_small</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AAAI_base_case.py</span></code>: A small example for decomposition, called with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">decomp</span> <span class="pre">catl_planning.examples.AAAI_base_case</span></code></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scenarios.html" class="btn btn-neutral float-right" title="Creating Custom Scenarios." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

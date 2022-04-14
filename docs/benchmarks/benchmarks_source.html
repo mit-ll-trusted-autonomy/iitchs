@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmarks Source Code &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Benchmarks Source Code</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/benchmarks/benchmarks_source.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="benchmarks-source-code">
+<h1>Benchmarks Source Code<a class="headerlink" href="#benchmarks-source-code" title="Permalink to this headline"></a></h1>
+<div class="section" id="module-benchmark_tools">
+<span id="benchmark-tools"></span><h2>benchmark_tools<a class="headerlink" href="#module-benchmark_tools" title="Permalink to this headline"></a></h2>
+<p>Module containing tools for benchmarking IITCHS MILP problem performance.</p>
+<p>The module contains the following classes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>BenchmarkOptionsGenerator: Class for storing configurations options</dt><dd><p>for benchmarking.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>named_tuple_iterator: Similar to itertools.product, but returns an</dt><dd><p>iterator that yields named tuples. Also maintains an internal
+count of how many items it has left.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>sized_product_iter: Similar to itertools.product, but maintains an</dt><dd><p>internal count of how many items it has left.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Author: James Usevitch (<a class="reference external" href="mailto:james&#46;usevitch&#37;&#52;&#48;ll&#46;mit&#46;edu">james<span>&#46;</span>usevitch<span>&#64;</span>ll<span>&#46;</span>mit<span>&#46;</span>edu</a>)
+Created: Aug 2021</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BenchmarkOptionsGenerator</span></span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Class used for setting up problem instance generation for IITCHS benchmarking.</p>
+<p>All options are in the form of lists, e.g.</p>
+<blockquote>
+<div><p>[configuration_1, configuration_2]</p>
+</div></blockquote>
+<p>Each configuration may be an object or another list.</p>
+<p>The function [INSERT HERE] produces an iterable that generates tuples of all possible
+combinations of configurations. These tuples can be passed to benchmarking functions
+to set up and run the optimization problems in parallel.</p>
+<p>For example, given two options</p>
+<blockquote>
+<div><p>option1, option2,</p>
+</div></blockquote>
+<p>each having configurations</p>
+<blockquote>
+<div><p>option1: [[config_1_1], [config_1_2]]
+option2: [[config_2_1], [config_2_2]],</p>
+</div></blockquote>
+<p>the iterator returns tuples of the form</p>
+<blockquote>
+<div><p>([config_1_1], [config_2_1]), ([config_1_1], [config_2_2]), ([config_1_2],[config_2_1]), ([config_1_2], [config_2_2])</p>
+</div></blockquote>
+<p>Generating the actual problem instances from, e.g., configuration ranges for a particular
+value is left up to the benchmarking functions running in parallel (? TBD)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you only want one configuration to be tested for a particular option, simply make the (outer) list have length one, e.g.</p>
+<blockquote>
+<div><p>option_1 = [configuration]</p>
+</div></blockquote>
+</div>
+<p>Conventions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>Anything appended with “_range_list” is in the form [[min, max],…]. It is meant to present</dt><dd><p>a list of ranges from which samples can be drawn for a configuration value.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.agent_latin_iterator">
+<span class="sig-name descname"><span class="pre">agent_latin_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.agent_latin_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.agent_latin_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a latin iterator for Agent options only.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.create_iterator">
+<span class="sig-name descname"><span class="pre">create_iterator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.create_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.create_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates iterator returning namedtuples with all possible combination of solver options.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.create_latin_file_generator">
+<span class="sig-name descname"><span class="pre">create_latin_file_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.create_latin_file_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.create_latin_file_generator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a file generator that directly generates problem .mps / .lp files
+without actually solving the problem.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.create_latin_iterator">
+<span class="sig-name descname"><span class="pre">create_latin_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.create_latin_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.create_latin_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates iterator returning latin hypercube samples of the variables in question.</p>
+<p>NOTE: This does NOT use the field self.number_of_trials_per_combination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.custom_latin_iterator">
+<span class="sig-name descname"><span class="pre">custom_latin_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.custom_latin_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.custom_latin_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a latin iterator from a custom list of field names.</p>
+<p>Each field name must be a field in the BenchmarkOptionsGenerator class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.named_tuple_product">
+<span class="sig-name descname"><span class="pre">named_tuple_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.named_tuple_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.named_tuple_product" title="Permalink to this definition"></a></dt>
+<dd><p>Returns</p>
+<p>Based on the following Stack Overflow post: <a class="reference external" href="https://stackoverflow.com/a/9098295">https://stackoverflow.com/a/9098295</a>
+CC BY-SA 3.0 <a class="reference external" href="https://creativecommons.org/licenses/by-sa/3.0/">https://creativecommons.org/licenses/by-sa/3.0/</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="benchmark_tools.BenchmarkOptionsGenerator.ts_latin_iterator">
+<span class="sig-name descname"><span class="pre">ts_latin_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#BenchmarkOptionsGenerator.ts_latin_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.BenchmarkOptionsGenerator.ts_latin_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a latin iterator for TS options only.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.Latin_MILP_File_Generator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Latin_MILP_File_Generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">BenchmarkOptionsGenerator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#Latin_MILP_File_Generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.Latin_MILP_File_Generator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Object that generates IITCHS MILP .lp / .mps problem files using
+a BenchmarkOptionsGenerator and Latin Hypercube Sampling.</p>
+<p>The MILP problem is NOT solved. The output location of the
+files can be controlled by setting the
+.static_options.transition_system_filename variable for the
+input BenchmarkOptionsGenerator.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">OutputTuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Trial_Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MILP_Solver_Used</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Runtime_Seconds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Timed_Out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Robust</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Regularize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Upper_Bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Grid_TS_Xdim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Grid_TS_Ydim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Number_of_Agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Agent_List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Number_of_MILP_Constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Number_of_MILP_Variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Objective_Value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Optimizer_Final_Status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Robustness_Variable_Value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Normalized_Travel_Time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TS_Filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Solution_Filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Error_Occurred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Formula_AST_Bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Formula_Num_Tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Formula_Num_TL_Operators</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Formula_Num_Bool_Operators</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Max_Generation_Attempts_Hit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#benchmark_tools.OutputTuple" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Agent_List">
+<span class="sig-name descname"><span class="pre">Agent_List</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Agent_List" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 11</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Alpha">
+<span class="sig-name descname"><span class="pre">Alpha</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Alpha" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Error_Occurred">
+<span class="sig-name descname"><span class="pre">Error_Occurred</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Error_Occurred" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 20</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Formula">
+<span class="sig-name descname"><span class="pre">Formula</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Formula" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 21</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Formula_AST_Bound">
+<span class="sig-name descname"><span class="pre">Formula_AST_Bound</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Formula_AST_Bound" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 22</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Formula_Num_Bool_Operators">
+<span class="sig-name descname"><span class="pre">Formula_Num_Bool_Operators</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Formula_Num_Bool_Operators" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 25</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Formula_Num_TL_Operators">
+<span class="sig-name descname"><span class="pre">Formula_Num_TL_Operators</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Formula_Num_TL_Operators" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 24</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Formula_Num_Tasks">
+<span class="sig-name descname"><span class="pre">Formula_Num_Tasks</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Formula_Num_Tasks" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 23</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Grid_TS_Xdim">
+<span class="sig-name descname"><span class="pre">Grid_TS_Xdim</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Grid_TS_Xdim" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 8</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Grid_TS_Ydim">
+<span class="sig-name descname"><span class="pre">Grid_TS_Ydim</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Grid_TS_Ydim" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 9</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.MILP_Solver_Used">
+<span class="sig-name descname"><span class="pre">MILP_Solver_Used</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.MILP_Solver_Used" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Max_Generation_Attempts_Hit">
+<span class="sig-name descname"><span class="pre">Max_Generation_Attempts_Hit</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Max_Generation_Attempts_Hit" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 26</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Normalized_Travel_Time">
+<span class="sig-name descname"><span class="pre">Normalized_Travel_Time</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Normalized_Travel_Time" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 17</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Number_of_Agents">
+<span class="sig-name descname"><span class="pre">Number_of_Agents</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Number_of_Agents" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 10</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Number_of_MILP_Constraints">
+<span class="sig-name descname"><span class="pre">Number_of_MILP_Constraints</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Number_of_MILP_Constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 12</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Number_of_MILP_Variables">
+<span class="sig-name descname"><span class="pre">Number_of_MILP_Variables</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Number_of_MILP_Variables" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 13</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Objective_Value">
+<span class="sig-name descname"><span class="pre">Objective_Value</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Objective_Value" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 14</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Optimizer_Final_Status">
+<span class="sig-name descname"><span class="pre">Optimizer_Final_Status</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Optimizer_Final_Status" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 15</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Regularize">
+<span class="sig-name descname"><span class="pre">Regularize</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Regularize" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Robust">
+<span class="sig-name descname"><span class="pre">Robust</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Robust" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Robustness_Variable_Value">
+<span class="sig-name descname"><span class="pre">Robustness_Variable_Value</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Robustness_Variable_Value" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 16</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Runtime_Seconds">
+<span class="sig-name descname"><span class="pre">Runtime_Seconds</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Runtime_Seconds" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Solution_Filename">
+<span class="sig-name descname"><span class="pre">Solution_Filename</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Solution_Filename" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 19</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.TS_Filename">
+<span class="sig-name descname"><span class="pre">TS_Filename</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.TS_Filename" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 18</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Timed_Out">
+<span class="sig-name descname"><span class="pre">Timed_Out</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Timed_Out" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Trial_Number">
+<span class="sig-name descname"><span class="pre">Trial_Number</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Trial_Number" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="benchmark_tools.OutputTuple.Upper_Bound">
+<span class="sig-name descname"><span class="pre">Upper_Bound</span></span><a class="headerlink" href="#benchmark_tools.OutputTuple.Upper_Bound" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.latin_dict_iterator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">latin_dict_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#latin_dict_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.latin_dict_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Creates an iterator producing Latin Hypercube samples from the given list of options. Outputs
+are in the form of dictionaries.</p>
+<p>Method for Sampling:</p>
+<blockquote>
+<div><p>First, all input iterators are turned into lists. The number of input iterators
+defines the number of “variables” in the sample.</p>
+<p>The least common multiple (LCM) of all list lengths defines the dimension of the Latin
+hypercube samples; i.e. the number of discrete “bins” to be sampled from.</p>
+<p>A 2D Numpy array is formed in memory. Each column of the array contains the “raw”
+coordinates for one Latin hypercube sample routine. (“Raw” means that the coordinates are
+based on the LCM of all list lengths). When <code class="docutils literal notranslate"><span class="pre">repetition</span></code> &gt; 1, multiple Latin hypercube
+routine results are concatenated horizontally into one matrix, with the number of routines
+equal to <code class="docutils literal notranslate"><span class="pre">repetition</span></code>.</p>
+<p>When next() is called on the iterator, the raw coordinates for a hypercube sample are
+matched to the corresponding bins in the stored lists. A named tuple is returned
+containing the entries from these bins.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="benchmark_tools.latin_hypercube_sample">
+<span class="sig-name descname"><span class="pre">latin_hypercube_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#latin_hypercube_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.latin_hypercube_sample" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a discrete latin hypercube sampling.</p>
+<p>Given n = num_variables and m = num_bins, this function returns an
+n x m numpy matrix. The iith column of the matrix contains the coordinates
+for the iith hypercube sample. All samples are guaranteed to be unique in
+their respective (multidimensional) rows and columns.</p>
+<p>Example: 2 variables, 10 bins. A possible return matrix is</p>
+<blockquote>
+<div><dl class="simple">
+<dt>array([[5, 3, 0, 9, 6, 8, 7, 4, 2, 1],</dt><dd><p>[2, 5, 3, 4, 1, 7, 6, 8, 9, 0]])</p>
+</dd>
+</dl>
+<p>Each column is the 2D index of a sample that is unique in its row and column
+(i.e. 10 rooks on a chessboard that don’t threaten each other).</p>
+</div></blockquote>
+<p>Example: 3 variables, 10 bins. A possible return matrix is</p>
+<blockquote>
+<div><dl class="simple">
+<dt>array([[1, 9, 4, 2, 6, 7, 3, 0, 8, 5],</dt><dd><p>[0, 1, 9, 2, 7, 6, 4, 3, 5, 8],
+[6, 4, 8, 3, 0, 2, 9, 7, 5, 1]])</p>
+</dd>
+</dl>
+<p>Each column is the 3D index of a sample that is unique in its 3D rows /columns
+(i.e. 10 rooks in a 3D cube chessboard that don’t threaten each other)</p>
+</div></blockquote>
+<p>TODO: Move this to generation_tools.py?</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.latin_named_tuple_iterator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">latin_named_tuple_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#latin_named_tuple_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.latin_named_tuple_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Similar to named_tuple_iterator, but generates latin hypercube samples to reduce
+the amount of testing required.</p>
+<p>Method for Sampling:</p>
+<blockquote>
+<div><p>First, all input iterators are turned into lists. The number of input iterators
+defines the number of “variables” in the sample.</p>
+<p>The least common multiple (LCM) of all list lengths defines the dimension of the Latin
+hypercube samples; i.e. the number of discrete “bins” to be sampled from.</p>
+<p>A 2D Numpy array is formed in memory. Each column of the array contains the “raw”
+coordinates for one Latin hypercube sample routine. (“Raw” means that the coordinates are
+based on the LCM of all list lengths). When <code class="docutils literal notranslate"><span class="pre">repetition</span></code> &gt; 1, multiple Latin hypercube
+routine results are concatenated horizontally into one matrix, with the number of routines
+equal to <code class="docutils literal notranslate"><span class="pre">repetition</span></code>.</p>
+<p>When next() is called on the iterator, the raw coordinates for a hypercube sample are
+matched to the corresponding bins in the stored lists. A named tuple is returned
+containing the entries from these bins.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="benchmark_tools.lcm">
+<span class="sig-name descname"><span class="pre">lcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#lcm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.lcm" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the least common multiple of a list of integers</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.named_tuple_iterator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">named_tuple_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#named_tuple_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.named_tuple_iterator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Similar to sized_product_iter, but returns the items as named tuples.</p>
+<p>Note: Does not take the “repeat” keyword argument used in itertools.product.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="benchmark_tools.sized_product_iter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">sized_product_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#sized_product_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.sized_product_iter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Similar to itertools.product, but maintains an internal count of the objects it has left.</p>
+<p>Works with next() and len().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="benchmark_tools.solve_one_optimization_problem">
+<span class="sig-name descname"><span class="pre">solve_one_optimization_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_system</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#solve_one_optimization_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.solve_one_optimization_problem" title="Permalink to this definition"></a></dt>
+<dd><p>Runs one optimization problem using the parameters from the named tuple <cite>options_tuple</cite> argument and the SimpleNamespace object <cite>static_options</cite>.</p>
+<p>The input <cite>tuple</cite> must be a named tuple obtained from BenchmarkOptionsGenerator.create_iterator().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Running time of the optimization algorithm
+PuLP_Model:</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>runtime (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="benchmark_tools.solve_problem_robust_and_not_robust">
+<span class="sig-name descname"><span class="pre">solve_problem_robust_and_not_robust</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/benchmark_tools.html#solve_problem_robust_and_not_robust"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#benchmark_tools.solve_problem_robust_and_not_robust" title="Permalink to this definition"></a></dt>
+<dd><p>Solves an IITCHS problem configuration for both the ‘robust’ and ‘not robust’
+cases, keeping the transition system the same.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-generation_tools">
+<span id="generation-tools"></span><h2>generation_tools<a class="headerlink" href="#module-generation_tools" title="Permalink to this headline"></a></h2>
+<p>Random generation tools for IITCHS benchmarking purposes.</p>
+<p>The generation functions fall roughly in three groups:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Transition System generation</p></li>
+<li><p>Agent / Capability generation</p></li>
+<li><p>CaTL Formula generation</p></li>
+</ul>
+</div></blockquote>
+<p>Some of the functions are modifications of functions in the file RandomizedCaTLExperiments.py.</p>
+<p>Author: James Usevitch (<a class="reference external" href="mailto:james&#46;usevitch&#37;&#52;&#48;ll&#46;mit&#46;edu">james<span>&#46;</span>usevitch<span>&#64;</span>ll<span>&#46;</span>mit<span>&#46;</span>edu</a>)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.FG_operators_and_tasks_to_strings">
+<span class="sig-name descname"><span class="pre">FG_operators_and_tasks_to_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operator_strings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_strings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#FG_operators_and_tasks_to_strings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.FG_operators_and_tasks_to_strings" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Python list of formulas from the inputs.</p>
+<p>This function only combines the operators <code class="docutils literal notranslate"><span class="pre">F</span></code>, <code class="docutils literal notranslate"><span class="pre">G</span></code>, <code class="docutils literal notranslate"><span class="pre">FG</span></code>, <code class="docutils literal notranslate"><span class="pre">GF</span></code> with tasks.
+To combine formulas together using AND and OR, use the function [INSERT HERE].</p>
+<p>Args:</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.class_to_capability_dict">
+<span class="sig-name descname"><span class="pre">class_to_capability_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">presort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#class_to_capability_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.class_to_capability_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Creates dictionary mapping capability class to the corresponding sets of capabilities.</p>
+<p>For example, given the capabilities (UV, IR, Mo), the dictionary might satisfy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">class_to_capability_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="s1">&#39;UV&#39;</span><span class="p">),</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="s1">&#39;IR&#39;</span><span class="p">),</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="s1">&#39;Mo&#39;</span><span class="p">),</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;UV&#39;</span><span class="p">,</span><span class="s1">&#39;IR&#39;</span><span class="p">]),</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;IR&#39;</span><span class="p">,</span><span class="s1">&#39;Mo&#39;</span><span class="p">]),</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;UV&#39;</span><span class="p">,</span><span class="s1">&#39;Mo&#39;</span><span class="p">]),</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;UV&#39;</span><span class="p">,</span><span class="s1">&#39;IR&#39;</span><span class="p">,</span><span class="s1">&#39;Mo&#39;</span><span class="p">])</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To ensure results are deterministic, by default the list of capabilities is sorted alphabetically
+in a case insensitive manner (using <code class="docutils literal notranslate"><span class="pre">str.casefold</span></code>) before creating the dictionary. To turn off
+this sorting, use the keyword argument <code class="docutils literal notranslate"><span class="pre">presort=False</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>capabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of capability strings.</p></li>
+<li><p><strong>presort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Boolean. If True, the list of capabilities is sorted in a
+case-insensitive manner before creating the dictionary. True
+by default.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.combine_formulas_AND_OR">
+<span class="sig-name descname"><span class="pre">combine_formulas_AND_OR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formulas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operators</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#combine_formulas_AND_OR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.combine_formulas_AND_OR" title="Permalink to this definition"></a></dt>
+<dd><p>Combines multiple formulas together with AND and OR operators.</p>
+<p>Formulas and operators must be listed in order; i.e. entry ii of
+operators goes between entries ii and ii+1 of formulas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>formulas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of formula strings consisting of F, G, FG, GF.</p></li>
+<li><p><strong>operators</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of AND / OR operators in the form “AND”, “OR”,
+“&amp;&amp;”, or “||”. Must be listed in order of combination, i.e. entry
+ii goes between entries ii and ii+1 from <code class="docutils literal notranslate"><span class="pre">formulas</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>String of the resulting formula.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generateGridTS_label_counts">
+<span class="sig-name descname"><span class="pre">generateGridTS_label_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tsname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labelNames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgeWeightRange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generateGridTS_label_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generateGridTS_label_counts" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a transition system in the form of a grid, with a specified number of occurrences for each label.</p>
+<p>Similar to generateRandomGridTS. The main difference is that a <code class="docutils literal notranslate"><span class="pre">label_counts</span></code> vector is passed in specifying
+how many times each label should occur in the transition system. States are allowed to have multiple labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tsname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of the transition system</p></li>
+<li><p><strong>dimensions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Two-element list with the x, y dimensions of the grid, e.g.  <code class="docutils literal notranslate"><span class="pre">[xdim,</span> <span class="pre">ydim]</span></code></p></li>
+<li><p><strong>labelNames</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – String names of each label</p></li>
+<li><p><strong>edgeWeightRange</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – </p></li>
+<li><p><strong>label_counts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of integers specifying how many times each label should occur in the transition
+system. Must have the same length as the <code class="docutils literal notranslate"><span class="pre">labelNames</span></code> list.</p></li>
+<li><p><strong>random_generator</strong> – Numpy random generator object. If unspecified, a new one is created using
+<code class="docutils literal notranslate"><span class="pre">np.random.default_rng()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Lomap transition system</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generateRandomGridTS">
+<span class="sig-name descname"><span class="pre">generateRandomGridTS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tsname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labelNames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgeWeightRange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_labels_per_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generateRandomGridTS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generateRandomGridTS" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a transition system in the form of a grid.</p>
+<p>All states</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is loosely based on the function <cite>generateRandomGridTS_seed</cite> in RandomizedCaTLExperiments.py.
+The main differences include:</p>
+<ul class="simple">
+<li><p>A random_generator is passed into this function instead of a seed number.</p></li>
+<li><p>The method of assigning labels is different</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generate_agents_by_class">
+<span class="sig-name descname"><span class="pre">generate_agents_by_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents_per_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generate_agents_by_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generate_agents_by_class" title="Permalink to this definition"></a></dt>
+<dd><p>Generates an equal amount of agents per agent class.</p>
+<p>Initial starting states</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generate_agents_by_total_and_distribution">
+<span class="sig-name descname"><span class="pre">generate_agents_by_total_and_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_to_capability_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_class_distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generate_agents_by_total_and_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generate_agents_by_total_and_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Generates agents by specifying the total number of agents and a probability distribution over
+all possible capability classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The total number of agents to create</p></li>
+<li><p><strong>class_to_capability_dict</strong> – <p>Dictionary mapping capability class to the corresponding sets of capabilities. For example,
+given the capabilities (UV, IR, Mo), the dictionary might satisfy
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+class_to_capability_dict = {</p>
+<blockquote>
+<div><p>0: set(‘UV’),
+1: set(‘IR’),
+2: set(‘Mo’),
+3: set([‘UV’,’IR’]),
+4: set([‘IR’,’Mo’]),
+5: set([‘UV’,’Mo’]),
+6: set([‘UV’,’IR’,’Mo’])</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>capability_class_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of probabilities for each capability class</p></li>
+<li><p><strong>initial_state_list</strong> – List of potential starting states for the agents</p></li>
+<li><p><strong>random_generator</strong> – A Numpy random generator. If None, the function creates one using np.random.default_rng().</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of agents.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generate_multiple_random_CaTL_formula">
+<span class="sig-name descname"><span class="pre">generate_multiple_random_CaTL_formula</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_formulas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generate_multiple_random_CaTL_formula"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generate_multiple_random_CaTL_formula" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random TL formulas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>number_of_formulas</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of formula strings to generate.</p></li>
+<li><p><strong>number_of_atomics_per_formula</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of atomics to include in each formula
+string. An “atomic” is one temporal operator (e.g. <cite>F</cite>, <cite>G</cite>, <cite>FG</cite>, <cite>GF</cite>, <cite>U</cite>)
+combined with one task (two tasks for the <cite>U</cite> operator). Atomics are combined
+into one formula with the <cite>AND</cite> / <cite>OR</cite> boolean operators.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of formula strings.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generate_random_CaTL_formula_and_info">
+<span class="sig-name descname"><span class="pre">generate_random_CaTL_formula_and_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generate_random_CaTL_formula_and_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generate_random_CaTL_formula_and_info" title="Permalink to this definition"></a></dt>
+<dd><p>Generates one random TL formula and returns it, along with other information about the formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>options_tuple</strong> (<em>namedtuple</em>) – </p></li>
+<li><p><strong>random_generator</strong> – Numpy random generator, e.g. np.random.default_rng(). If None, then the
+function will create one using np.random.default_rng(). Passing in a random number
+generator helps prevent similar results when running multiple benchmark simulations
+in parallel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Output tuple including the following elements:</dt><dd><ul class="simple">
+<li><p><strong>formula</strong> <em>(string)</em>: The CaTL formula</p></li>
+<li><p><strong>ast_bound</strong> <em>(int)</em>: The AST bound of the formula.</p></li>
+<li><dl class="simple">
+<dt><strong>number_of_atomics_per_formula</strong> <em>(int)</em>: The number of atomics in the formula. Note that by</dt><dd><dl class="simple">
+<dt>the definition of an atomic, this number is identical to:</dt><dd><ul>
+<li><p>The number of tasks # TODO: Only true if U isn’t included</p></li>
+<li><p>The number of TL operators</p></li>
+<li><p>The number of boolean operators + 1</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><p><strong>num_tasks</strong> <em>(int)</em>: The number of tasks that are in the formula</p></li>
+<li><dl class="simple">
+<dt><strong>num_tl_operators</strong> <em>(int)</em>: The total number of F, G, FG, GF, or U operators</dt><dd><p>found in the formula.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>num_bool_operators</strong> <em>(int)</em>: The total number of AND and OR operators</dt><dd><p>found in the formula.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.generate_random_agents">
+<span class="sig-name descname"><span class="pre">generate_random_agents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_capabilities_per_agent_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_agents_generated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#generate_random_agents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.generate_random_agents" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random arrays of agents.</p>
+<p>The num_capabilities_per_agent_range is in the form [min,max]. Agents are given a random number of capabilities, where
+the number of capabilities is in this range. To specify a specific number of capabilities, set min == max.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.probability_over_capability_cardinality">
+<span class="sig-name descname"><span class="pre">probability_over_capability_cardinality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cardinality_distr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#probability_over_capability_cardinality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.probability_over_capability_cardinality" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a probability distribution based on how likely it is for agents to have a _number_ of capabilities, e.g.
+1 capability vs. 3 capabilities.</p>
+<p>A capability cardinality class is a set of capability classes, each class having the same cardinality of capabilities.
+For example,</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The capability classes {UV}, {IR}, {Mo} are all of cardinality class 1 (one capability per class)</p></li>
+<li><p>The capability classes {UV,IR}, {UV,Mo}, {IR, Mo} are all of cardinality class 2 (two capabilities per class)</p></li>
+<li><p>The capability class {UV,IR,Mo} is of cardinality class 3 (three capabilities per class)</p></li>
+</ul>
+</div></blockquote>
+<p>This function assumes that each cardinality class C_i is given a probability weight w_i (e.g., the probability of an agent
+having 1, or 2, or 3 capabilities). The probability w_i is then divided uniformly among all possible capability classes
+within that cardinality class.</p>
+<p>More specifically, given n capabilities, the capability cardinality class k has (n choose k) agents. If class k is given
+probability weight w_k, then each capability class in cardinality class k has probability w_k / (n choose k).</p>
+<p class="rubric">Example</p>
+<dl class="simple">
+<dt>Suppose our capabilities are {UV, IR, Mo}. Suppose that <code class="docutils literal notranslate"><span class="pre">cardinality_distr</span> <span class="pre">=</span> <span class="pre">[0.2,</span> <span class="pre">0.3,</span> <span class="pre">0.5]</span></code>. Then:</dt><dd><ul class="simple">
+<li><p>Each capability class of cardinality 1 ({UV}, {Mo}, {IR}) would have probability 0.2 / 3</p></li>
+<li><p>Each capability class of cardinality 2 ({UV,Mo}, {Mo,IR}, {UV,IR}) would have probability 0.3 / 3</p></li>
+<li><p>Each capability class of cardinality 3 ({UV,Mo,IR}) would have probability 0.5 / 1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.task_capabilities_to_string">
+<span class="sig-name descname"><span class="pre">task_capabilities_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_required_agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#task_capabilities_to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.task_capabilities_to_string" title="Permalink to this definition"></a></dt>
+<dd><p>Converts a list of capabilities and a list of number of required agents
+to string form for CaTL task formulas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>capabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – A list of string capabilities, e.g. <code class="docutils literal notranslate"><span class="pre">['UV',</span> <span class="pre">'Mo',</span> <span class="pre">'Vis',</span> <span class="pre">'IR']</span></code>.</p></li>
+<li><p><strong>num_required_agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – A list of integers specifying how many agents are needed for
+the corresponding entries in <code class="docutils literal notranslate"><span class="pre">capabilities</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string representation of the capabilities needed for a task, e.g. ‘{(UV,1)}’
+or ‘{(IR,2),(Mo,3)}’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(string)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="generation_tools.tasks_to_strings">
+<span class="sig-name descname"><span class="pre">tasks_to_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">durations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_strings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/generation_tools.html#tasks_to_strings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#generation_tools.tasks_to_strings" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Python list of task strings from the inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>durations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of nonnegative integer time durations</p></li>
+<li><p><strong>state_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of string state labels</p></li>
+<li><p><strong>capability_strings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of capability strings, e.g. ‘{(UV,1)}’ or ‘{(Vis,2),(IR,4)}’.
+Use task_capabilities_to_string() function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Python list of task strings.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

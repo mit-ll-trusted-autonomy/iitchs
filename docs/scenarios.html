@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creating Custom Scenarios. &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Temporal Logic Primer" href="temporal_logic_primer.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Custom Scenarios</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#structure-of-scenario-files">Structure of Scenario Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Creating Custom Scenarios.</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/scenarios.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="creating-custom-scenarios">
+<h1>Creating Custom Scenarios.<a class="headerlink" href="#creating-custom-scenarios" title="Permalink to this headline"></a></h1>
+<p>Custom scenarios can be run by creating custom scenario files (sometimes called “casefiles”).</p>
+<!-- When creating a custom scenario file, you will need a temporal logic formula specifying the desired actions for the agent team to complete. -->
+<div class="section" id="structure-of-scenario-files">
+<h2>Structure of Scenario Files<a class="headerlink" href="#structure-of-scenario-files" title="Permalink to this headline"></a></h2>
+<p>Each scenario file must have the following elements:</p>
+<p><strong>File Names</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ts_filename</span></code>: String. Path to a yaml file describing the transition system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_path</span></code>: String. Output path to the folder specifying where to save all IITCHS output file to, including. Output files include optimization <code class="docutils literal notranslate"><span class="pre">.lp</span></code>, <code class="docutils literal notranslate"><span class="pre">.mps</span></code>, and <code class="docutils literal notranslate"><span class="pre">.sol</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_filename</span></code>: String. Output path <strong>including the base filename</strong> specifying where to save IITCHS output files. The base filename is used as the prefix for all output files.
+The path (excluding the base filename) must match the path in <code class="docutils literal notranslate"><span class="pre">output_path</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_old_files</span></code>: Boolean. If true, IITCHS will load prior constraints / solution files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reload_file</span></code>: String. The name for the file to reload if <code class="docutils literal notranslate"><span class="pre">load_old_files</span></code> is True</p></li>
+</ul>
+<p><strong>Final Output Options</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sim_dynamics</span></code>: Boolean. If True, IITCHS will compute both the target path and a dynamical trajectory tracking it for each agent. The target path vs. dynamic trajectory will be plotted for each agent. The dynamics of each agent are specified using the parameters below.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sim_wheel_base</span></code>: Double.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span></code>: Double. Look-forward gain.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lfc</span></code>: Double. Look-ahead distance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Kp</span></code>: Double. Speed propportional gain.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dt</span></code>: Double. Time step in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">L</span></code>: Double. Wheel base of each agent in meters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kml_output</span></code>: Boolean. If true, the solution is put into a KML file which can be used to visualize the output using Google Maps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">corner_coor</span></code>: Tuple. The latitude/longitude coordinates of the bottom left corner of the transition system in the KML output.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">txt_out</span></code>: Boolean. If true, IITCHS exports all waypoint data into individually named txt files.</p></li>
+</ul>
+<!-- * `show_animation`: Boolean. Creates a video of the agents dynamically tracking the target path. NOTE: Cannot currently be set from the case1.py file; this must be set directly in the pure_pursuit.py file.-->
+<!-- * `old_nearest_point_index`: (?) Integer. -->
+<p><strong>Specification and Agents</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agents</span></code>: Python list. Specifies each agent’s initial position and capabilities. The _i_th entry of the array contains a tuple describing the _i_th agent. The format of the tuple is <code class="docutils literal notranslate"><span class="pre">('initial_state',</span> <span class="pre">{'Capability1',</span> <span class="pre">'Capability2',...})</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">formula</span></code>: String. Contains the CaTL formula to be satisfied by IITCHS. Will be parsed by Antlr.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_visuals</span></code>: Boolean specifying whether to show the transition world before running the IITCHS routine. If true, a plot with each state and the graph lines connecting each state is shown.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robust</span></code>: Boolean.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">regularize</span></code>: Boolean. If true, IITCHS regularizes the optimization travel time in order to reduce spurious motion.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code>: Double. Regularization parameter in the interval (0,1). Used if <code class="docutils literal notranslate"><span class="pre">regularize</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">upper_bound</span></code>: Boolean.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cap_height_map</span></code>: Numpy array.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_radius</span></code>: Numpy array. Collision avoidance radius for each agent</p></li>
+</ul>
+<p><strong>Lower Level Trajectory Planning Variables</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">local_obstacles</span></code>: Python list. List of obstacles considered when IITCHS plans actual trajectories, but not considered in the optimization.
+The list should be in the following form:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obstaclesList</span>  <span class="o">=</span> <span class="p">[[</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>The variable <code class="docutils literal notranslate"><span class="pre">obstaclesList</span></code> considers multiple separate planes of motion. Agents in different planes of motion do not collide. This may represent, for example, ground vehicles moving in one plane and aerial vehicles moving in a higher plane.
+Notice that <code class="docutils literal notranslate"><span class="pre">obstaclesList</span></code> has the form <code class="docutils literal notranslate"><span class="pre">[outer_entry</span> <span class="pre">[inner</span> <span class="pre">entry</span> <span class="pre">[x,y,r],[x,y,r]]]</span></code>. Each outer entry defines a separate plane of motion and consists of multiple inner entries. Each inner entry consists of an obstacle specified by a circle with coordinates and radius <code class="docutils literal notranslate"><span class="pre">(x,y,r)</span></code>. There is no limit on the number of planes of motion that can be defined.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">max_attempts</span></code>: Integer. Number of restarts allowed for one trajectory before restarting from scratch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_rrt_time</span></code>: Integer. Time allowed for single tree to be built before restart.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_region_bounds</span></code>: Python list. Reference frame bound for RRT algorithm. Has the form <code class="docutils literal notranslate"><span class="pre">[x_min,</span> <span class="pre">x_max,</span> <span class="pre">y_min,</span> <span class="pre">y_max]</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">world_max</span></code>: Python list. Has the form <code class="docutils literal notranslate"><span class="pre">[x_max,</span> <span class="pre">y_max]</span></code> with maximum <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code> coordinates for the simulation world.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">planning_step_time</span></code>: Integer. Number of steps in between each optimization step time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_sol</span></code>: Boolean. If True, a plot of all the final trajectories is shown after IITCHS finds a solution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">record_sol</span></code>: Boolean. If True, a video is created and saved showing all agents’ trajectories being executed.</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="temporal_logic_primer.html" class="btn btn-neutral float-right" title="Temporal Logic Primer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

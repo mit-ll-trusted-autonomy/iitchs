@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>route_planning.py &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>route_planning.py</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_catl_planning/route_planning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="route-planning-py">
+<h1>route_planning.py<a class="headerlink" href="#route-planning-py" title="Permalink to this headline"></a></h1>
+<p>Documentation for the functions in <code class="docutils literal notranslate"><span class="pre">route_planning.py</span></code>.</p>
+<span class="target" id="module-route_planning"></span><dl class="py function">
+<dt class="sig sig-object py" id="route_planning.add_proposition_constraints_pulp">
+<span class="sig-name descname"><span class="pre">add_proposition_constraints_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stl_milp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Integer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#add_proposition_constraints_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.add_proposition_constraints_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the proposition constraints. First, the proposition-state variables
+are defined such that capabilities are not double booked. Second, contraints
+are added such that proposition are satisfied as best as possible. The
+variables in the MILP encoding of the STL formula are used for the encoding
+as the minimizers of over proposition-state variables.</p>
+<p>This function uses the PuLP modeling language rather than Gurobi directly.</p>
+<ul class="simple">
+<li><p>The PuLP model variable.</p></li>
+<li><p>The MILP encoding of the STL formula obtained from the CaTL specification.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The AST of the CaTL specification formula.</p></li>
+<li><p>Dictionary of capability encoding that maps capabilities to binary words</p></li>
+</ul>
+<p>represented as integers.
+- The agent classes given as a dictionary from frozen sets of capabilities
+to bitmaps (integers).
+- Time bound.
+- Variable type (default: integer).’F[0, 10] T(2, orange, {(UV, 1), (Mo, 1)})’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.add_system_constraints_pulp">
+<span class="sig-name descname"><span class="pre">add_system_constraints_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#add_system_constraints_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.add_system_constraints_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the constraints that capture the system dynamics.</p>
+<ul class="simple">
+<li><p>The PuLP model object.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The agent classes given as a dictionary from frozen sets of capabilities</p></li>
+</ul>
+<p>to bitmaps (integers).
+- The initial distribution of capabilities at each state.
+- Time bound.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The initial time constraints</p>
+<blockquote>
+<div><p>z_{state}_g_0 = eta_{state}_g</p>
+</div></blockquote>
+<p>is equivalent to</p>
+<blockquote>
+<div><p>sum_{e=(u, v) in T} z_e_g_W(e) = eta_{state}_g</p>
+</div></blockquote>
+<p>because of the definition of the team state at TS states,
+where eta_{state}_g is the number of agents of class g at state {state} at
+time 0.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.computeRobustnessUpperBound">
+<span class="sig-name descname"><span class="pre">computeRobustnessUpperBound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#computeRobustnessUpperBound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.computeRobustnessUpperBound" title="Permalink to this definition"></a></dt>
+<dd><p>Computes a loose upper bound on the robustness value.</p>
+<p>The robustness value measures whether there are enough agents to satisfy the
+temporal logic specification in the given transition system. A positive
+robustness value indicates there are more than enough required agents to
+satisfy the formula. A negative robustness value indicates that there
+are not enough required agents to satisfy the formula.</p>
+<p>This function computes an upper bound on the robustness value for a given
+transition system (TS), set of agents, and CaTL formula. This upper bound can
+be used as a “sanity check” to test if the formula is infeasible for the
+given TS and set of agents. If the upper bound is negative, then the
+problem is infeasible. If the upper bound is positive, then it is <em>possible</em>
+that the problem is feasible.</p>
+<p>If the upper bound is negative, there is no point in solving the associated
+MILP. The problem is infeasible.</p>
+<p><strong>Note:</strong> This function does <em>not</em> take into account the travel time between
+regions in the TS.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – The transition system</p></li>
+<li><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of agents in the system. Each agent has the form <code class="docutils literal notranslate"><span class="pre">(initial_state,</span> <span class="pre">{capability1,</span> <span class="pre">capability2,...})</span></code>.</p></li>
+<li><p><strong>formula</strong> – Either a string or a catl.CATLFormula object containing the formula.
+If a string, it is converted into a catl.CATLFormula object by
+calling <code class="docutils literal notranslate"><span class="pre">formula</span> <span class="pre">=</span> <span class="pre">CATLFormula.from_formula(formula)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Upper bound on the robustness value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.compute_agent_classes">
+<span class="sig-name descname"><span class="pre">compute_agent_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#compute_agent_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.compute_agent_classes" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the set of agent types w.r.t. capabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of agents, where agents are tuples (q, cap), q is the initial state of
+the agent, and cap is the set of capabilities. Agents’ identifiers are their
+indices in the list.</p></li>
+<li><p><strong>capabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Dictionary of capability class encoding that maps capability classes to binary words
+represented as integers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary of agent capability classes that maps frozen (immutable) sets of
+capabilities to the binary words encoding the corresponding capability classes.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.compute_capability_bitmap">
+<span class="sig-name descname"><span class="pre">compute_capability_bitmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#compute_capability_bitmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.compute_capability_bitmap" title="Permalink to this definition"></a></dt>
+<dd><p>Computes a bitmap encoding of agents’ capabilities. Each capability is
+associated with a bit in a binary word of length equal to the number of capabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List containing agent information. The iith entry is a tuple (q, cap)
+corresponding to the iith agent, where q is the initial state of
+the agent and cap is the set of all capabilities that agent has.</p>
+<p>An example of a valid agents list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agents</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;q1&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;VIS&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q3&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;LID&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;LID&#39;</span><span class="p">,</span><span class="s1">&#39;IR&#39;</span><span class="p">})]</span>
+</pre></div>
+</div>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary mapping capabilities to integers representing the
+binary words for the capabilities.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.compute_initial_capability_distribution">
+<span class="sig-name descname"><span class="pre">compute_initial_capability_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#compute_initial_capability_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.compute_initial_capability_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the initial number of agents of each class at each state.
+Input
+—–
+- The transition system specifying the environment.
+- List of agents, where agents are tuples (q, cap), q is the initial state of
+the agent, and cap is the set of capabilities. Agents’ identifiers are their
+indices in the list.
+- Dictionary of capability encoding that maps capabilities to binary words
+represented as integers.
+Output
+——
+Dictionary from states to distribution of agents from each class. The
+distribution is a list of length equal to the number of capabilities, and
+each element is the number of agents of having those capabilities (a class).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.create_system_variables_pulp">
+<span class="sig-name descname"><span class="pre">create_system_variables_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Integer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#create_system_variables_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.create_system_variables_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the state and transition variables associated with the given
+transition system using the PuLP framework.</p>
+<p>The state variables are z_{state}_{cap}_k, where {state} is a node in the TS
+graph, {cap} is a capability class encoded as an integer, and k is the time
+step.</p>
+<p>The transition variables are z_{state1}_{state2}_{cap}_k, where {state1} and
+{state2} define the transition, {cap} is a capability class encoded as an
+integer, and k is the time step.</p>
+<ul class="simple">
+<li><p>The PuLP model object.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The agent classes given as a dictionary from frozen sets of capabilities</p></li>
+</ul>
+<p>to bitmaps (integers).
+- Time bound.
+- Variable type (default: integer).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Data structure holding the variables is a list of list of variables, e.g.,</p>
+<blockquote>
+<div><p>d[‘vars’][k][g] is the z_{q/e}_bitmap(g)_k</p>
+</div></blockquote>
+<p>where d is the dictionary of attributes for a node q or an edge e in the TS,
+g is an agent class (frozen set of capabilities), bitmap(g) is the binary
+encoding of g as an integer, and k is the time step.
+Also, d[‘vars’] is a list of length <a href="#id1"><span class="problematic" id="id2">`</span></a>bound+1’, d[‘vars’][k] is a dictionary
+from frozen sets to gurobi variables.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.extract_propositions">
+<span class="sig-name descname"><span class="pre">extract_propositions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ast</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#extract_propositions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.extract_propositions" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the set of propositions in the formula, and checks that it is
+included in the transitions system.</p>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The AST of the CaTL specification formula.</p></li>
+</ul>
+<p>Set of propositions in the specification formula.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.generate_MILP_problems">
+<span class="sig-name descname"><span class="pre">generate_MILP_problems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upperBound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_grave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#generate_MILP_problems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.generate_MILP_problems" title="Permalink to this definition"></a></dt>
+<dd><p>Similar to route_planning(), but simply generates the MILP .lp / .mps problem files
+without actually solving them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – </p></li>
+<li><p><strong>ts</strong> – </p></li>
+<li><p><strong>agents</strong> – </p></li>
+<li><p><strong>formula</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>bound</strong> – </p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>replan_req</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>robust</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>regularize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>upperBound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>load_previous</strong> – </p></li>
+<li><p><strong>solver_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>compute_IIS</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>verbose</strong> – </p></li>
+<li><p><strong>compress_files</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>solver_time_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Time limit on the MILP solution process. The MILP will stop after
+this amount of time. If no time limit is specified, the MILP will
+run to completion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Tuple containing the following elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>mpulp</strong>: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</p></li>
+<li><dl class="simple">
+<dt><strong>replan_data</strong>: Object containing the following fields:</dt><dd><ul>
+<li><p>TODO: [INSERT HERE]</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a>)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>List of agents, where agents are tuples (q, cap), q is the initial state</p></li>
+</ul>
+<p>of the agent, and cap is the set of capabilities. Agents’ identifiers are
+their indices in the list.
+- The CaTL specification formula.
+- The time bound used in the encoding (default: computed from CaTL formula).</p>
+<p>TODO: TBD</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.get_ub">
+<span class="sig-name descname"><span class="pre">get_ub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capDict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#get_ub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.get_ub" title="Permalink to this definition"></a></dt>
+<dd><p>Uses recursive relationships to compute the excess capacity of the formula with respect to the team</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.route_planning">
+<span class="sig-name descname"><span class="pre">route_planning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_req</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upperBound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_previous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_IIS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_time_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#route_planning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.route_planning" title="Permalink to this definition"></a></dt>
+<dd><p>Performs route planning for agents <code class="docutils literal notranslate"><span class="pre">agents</span></code> moving in a transition system
+<code class="docutils literal notranslate"><span class="pre">ts</span></code> such that the CaTL specification <code class="docutils literal notranslate"><span class="pre">formula</span></code> is satisfied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – </p></li>
+<li><p><strong>ts</strong> – </p></li>
+<li><p><strong>agents</strong> – </p></li>
+<li><p><strong>formula</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>bound</strong> – </p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>replan_req</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>robust</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>regularize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>upperBound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>load_previous</strong> – </p></li>
+<li><p><strong>solver_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>compute_IIS</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>verbose</strong> – </p></li>
+<li><p><strong>compress_files</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>solver_time_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Time limit on the MILP solution process. The MILP will stop after
+this amount of time. If no time limit is specified, the MILP will
+run to completion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Tuple containing the following elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>mpulp</strong>: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</p></li>
+<li><dl class="simple">
+<dt><strong>replan_data</strong>: Object containing the following fields:</dt><dd><ul>
+<li><p>TODO: [INSERT HERE]</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a>)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>List of agents, where agents are tuples (q, cap), q is the initial state</p></li>
+</ul>
+<p>of the agent, and cap is the set of capabilities. Agents’ identifiers are
+their indices in the list.
+- The CaTL specification formula.
+- The time bound used in the encoding (default: computed from CaTL formula).</p>
+<p>TODO: TBD</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="route_planning.suppress_output">
+<span class="sig-name descname"><span class="pre">suppress_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/route_planning.html#suppress_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#route_planning.suppress_output" title="Permalink to this definition"></a></dt>
+<dd><p>Prevents a function from printing output to terminal.</p>
+<p>Redirects the output to /dev/null. Used to suppress the output of the optimization
+solvers.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

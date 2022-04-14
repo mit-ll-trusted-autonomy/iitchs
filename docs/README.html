@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="IITCHS Base" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">IITCHS Base</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installing-antlr-4-8">Installing Antlr 4.8</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-iitchs-base-with-conda">Installing IITCHS_base with Conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-antlr-files">Generate ANTLR Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline"></a></h2>
+<p>These instructions assume you are using Ubuntu 18.04 with the following tools already installed:</p>
+<ul class="simple">
+<li><p>Terminal with BASH shell</p></li>
+<li><p>Git</p></li>
+<li><p>Python 3.8</p></li>
+<li><p>Anaconda3 or Miniconda3</p></li>
+<li><p><a class="reference external" href="https://www.antlr.org/">Antlr</a> version 4.8. Instructions for installing Antlr can be found below.</p></li>
+<li><p>At least one of the following optimization solvers:</p>
+<ul>
+<li><p>Gurobi. Follow the Gurobi <a class="reference external" href="https://www.gurobi.com/documentation/quickstart.html">Quick Start Guide</a> to install Gurobi and set up a license.</p></li>
+<li><p>SCIP. Instructions for obtaining a license and installing can be found on the <a class="reference external" href="https://www.scipopt.org/">SCIP website</a>.</p></li>
+</ul>
+</li>
+</ul>
+<p>These instructions also assume you have SSH keys set up with Github. (This is not strictly necessary, but it makes installation more convenient.)</p>
+</div>
+<div class="section" id="id1">
+<h2>Installation<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>There are three steps to installing IITCHS:</p>
+<ol class="simple">
+<li><p>Install ANTLR 4.8</p></li>
+<li><p>Install iitchs_base using conda</p></li>
+<li><p>Generate ANTLR Files</p></li>
+</ol>
+<div class="section" id="installing-antlr-4-8">
+<h3>Installing Antlr 4.8<a class="headerlink" href="#installing-antlr-4-8" title="Permalink to this headline"></a></h3>
+<p>First, get the Antlr 4.8 binary. The binary can be placed anywhere, but note the name of the directory where it is installed. This tutorial will assume the binary is located in <code class="docutils literal notranslate"><span class="pre">~/antlr</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir ~/antlr
+<span class="nb">cd</span> ~/antlr
+wget https://www.antlr.org/download/antlr-4.8-complete.jar
+</pre></div>
+</div>
+<p>Next, put the following lines in your .bashrc file, replacing <code class="docutils literal notranslate"><span class="pre">~/antlr</span></code> with the path to where you downloaded the Antlr binary.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">CLASSPATH</span><span class="o">=</span><span class="s2">&quot;.:~/antlr:</span><span class="nv">$CLASSPATH</span><span class="s2">&quot;</span>
+<span class="nb">alias</span> <span class="nv">antlr4</span><span class="o">=</span><span class="s1">&#39;java -jar ~/antlr/antlr-4.8-complete.jar -visitor&#39;</span>
+<span class="nb">alias</span> <span class="nv">grun</span><span class="o">=</span><span class="s1">&#39;java org.antlr.v4.gui.TestRig&#39;</span>
+</pre></div>
+</div>
+<p>After saving the file, source your .bashrc.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> ~/.bashrc
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-iitchs-base-with-conda">
+<h3>Installing IITCHS_base with Conda<a class="headerlink" href="#installing-iitchs-base-with-conda" title="Permalink to this headline"></a></h3>
+<p>Make sure your system is up-to-date.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt update
+</pre></div>
+</div>
+<p>Ensure the following packages are installed via apt:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libgmp3</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>Clone the <code class="docutils literal notranslate"><span class="pre">iitchs_base</span></code> repository and its submodules. Be sure to use the <code class="docutils literal notranslate"><span class="pre">--recurse-submodules</span></code> option.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone --recurse-submodules git@github.mit.edu:iitchs/iitchs_base.git
+</pre></div>
+</div>
+<p>Next we want to create a conda environment with the correct packages installed. We do this using the <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file. Run the following command to generate the correct anaconda environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">iitchs_base</span><span class="o">&gt;</span>
+<span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>Next, we need to set the python path variables within the environment. This is done using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">iitchs_base</span>
+<span class="n">bash</span> <span class="n">setup_conda_env_vars</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>This will make two files in <code class="docutils literal notranslate"><span class="pre">/anaconda3/envs/iitchs_base/etc/conda/</span></code> that set your <code class="docutils literal notranslate"><span class="pre">$PYTHONPATH</span></code> when you activate and deactivate the env. If you want to add to these files, they augment the <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> when the environment is activated. These augmentations disappear when the environment is deactivated.</p>
+<p>Next, deactivate and activate your conda environment to update your <code class="docutils literal notranslate"><span class="pre">$PYTHONPATH</span></code> with the required paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">iitchs_base</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generate-antlr-files">
+<h3>Generate ANTLR Files<a class="headerlink" href="#generate-antlr-files" title="Permalink to this headline"></a></h3>
+<p>Finally, several files will need to be generated using Antlr 4.8. Navigate into the <code class="docutils literal notranslate"><span class="pre">iitchs_base</span></code> folder and run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;path to iitchs_base&gt;/src/python_stl/stl
+antlr4 -Dlanguage<span class="o">=</span>Python3 stl.g4
+<span class="nb">cd</span> &lt;path to iitchs_base&gt;/src/catl/catl
+antlr4 -Dlanguage<span class="o">=</span>Python3 catl.g4
+</pre></div>
+</div>
+<p><strong>Note:</strong> Make sure that the “P” in “Python3” is capitalized, or Antlr will throw an error.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="IITCHS Base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

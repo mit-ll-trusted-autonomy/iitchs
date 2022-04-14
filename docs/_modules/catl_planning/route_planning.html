@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning.route_planning &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarks/index_benchmarks.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>catl_planning.route_planning</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for catl_planning.route_planning</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="c1"># Contributors:</span>
+<span class="c1">#   Cristian Ioan Vasile (cvasile@mit.edu) (cvasile@lehigh.edu)</span>
+<span class="c1">#   Zachary Serlin (zachary.serlin@ll.mit.edu)  </span>
+<span class="c1">#   James Usevitch (james.usevitch@ll.mit.edu)</span>
+<span class="c1">#   Makai Mann (makai.mann@ll.mit.edu)</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+	<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pulp</span>
+<span class="kn">from</span> <span class="nn">catl_planning.write_sol</span> <span class="kn">import</span> <span class="n">write_sol</span>
+<span class="c1"># from lomap.lomap.classes.timer import Timer</span>
+<span class="kn">from</span> <span class="nn">python_stl.stl.stl2milp</span> <span class="kn">import</span> <span class="n">stl2milp_pulp</span> <span class="c1">#TODO: Fix this to just pulp version?</span>
+<span class="kn">from</span> <span class="nn">catl</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">catl2stl</span> <span class="kn">import</span> <span class="n">catl2stl</span>
+<span class="kn">from</span> <span class="nn">catl_planning.visualization</span> <span class="kn">import</span> <span class="n">show_environment</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">catl_planning.history_builder</span> <span class="kn">import</span> <span class="n">regCapHist</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+
+
+<span class="k">class</span> <span class="nc">empty_struct</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+
+<span class="c1"># Decorator function to supress output</span>
+<div class="viewcode-block" id="suppress_output"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.suppress_output">[docs]</a><span class="k">def</span> <span class="nf">suppress_output</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Prevents a function from printing output to terminal.</span>
+
+<span class="sd">    Redirects the output to /dev/null. Used to suppress the output of the optimization</span>
+<span class="sd">    solvers.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dev_null</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">dev_null</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<div class="viewcode-block" id="add_proposition_constraints_pulp"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.add_proposition_constraints_pulp">[docs]</a><span class="k">def</span> <span class="nf">add_proposition_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">stl_milp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ast</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">,</span>
+                                <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpInteger</span><span class="p">,</span><span class="n">num_agents</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Adds the proposition constraints. First, the proposition-state variables</span>
+<span class="sd">    are defined such that capabilities are not double booked. Second, contraints</span>
+<span class="sd">    are added such that proposition are satisfied as best as possible. The</span>
+<span class="sd">    variables in the MILP encoding of the STL formula are used for the encoding</span>
+<span class="sd">    as the minimizers of over proposition-state variables.</span>
+
+<span class="sd">    This function uses the PuLP modeling language rather than Gurobi directly.</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The PuLP model variable.</span>
+<span class="sd">    - The MILP encoding of the STL formula obtained from the CaTL specification.</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - The AST of the CaTL specification formula.</span>
+<span class="sd">    - Dictionary of capability encoding that maps capabilities to binary words</span>
+<span class="sd">    represented as integers.</span>
+<span class="sd">    - The agent classes given as a dictionary from frozen sets of capabilities</span>
+<span class="sd">    to bitmaps (integers).</span>
+<span class="sd">    - Time bound.</span>
+<span class="sd">    - Variable type (default: integer).&#39;F[0, 10] T(2, orange, {(UV, 1), (Mo, 1)})&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">props</span> <span class="o">=</span> <span class="n">extract_propositions</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ast</span><span class="p">)</span>
+
+    <span class="c1"># add proposition-state variables</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">capabilities</span><span class="p">:</span>
+            <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bound</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop&#39;</span><span class="p">]:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;z_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="n">vtype</span><span class="p">,</span> <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upBound</span><span class="o">=</span><span class="n">num_agents</span><span class="p">)</span>
+
+
+    <span class="c1"># constraints for relating (proposition, state) pairs to system states</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">capabilities</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bound</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">equality</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span>
+                                                    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop&#39;</span><span class="p">]])</span>
+                <span class="n">equality</span> <span class="o">-=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">g</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">agent_classes</span>
+                                                                    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">g</span><span class="p">])</span>
+                <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">equality</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;prop_state_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="c1"># add propositions constraints for only those variables appearing in the</span>
+    <span class="c1"># MILP encoding of the formula</span>
+    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">capabilities</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bound</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">variable</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">variable</span> <span class="ow">in</span> <span class="n">stl_milp</span><span class="o">.</span><span class="n">variables</span>
+                                        <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">stl_milp</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">variable</span><span class="p">]):</span>
+                    <span class="n">minPropTotal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop&#39;</span><span class="p">]:</span>
+                            <span class="n">pvar</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="p">(</span><span class="s1">&#39;p_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">u</span><span class="p">),</span> <span class="n">cat</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpBinary</span><span class="p">)</span>
+                            <span class="n">minPropTotal</span> <span class="o">+=</span> <span class="n">pvar</span>
+                            <span class="n">minPropLB</span> <span class="o">=</span> <span class="p">(</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pvar</span><span class="p">)</span><span class="o">*</span><span class="n">stl_milp</span><span class="o">.</span><span class="n">M</span> <span class="o">&lt;=</span> <span class="n">stl_milp</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">k</span><span class="p">])</span>
+                            <span class="n">minPropUB</span> <span class="o">=</span> <span class="p">(</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pvar</span><span class="p">)</span><span class="o">*</span><span class="n">stl_milp</span><span class="o">.</span><span class="n">M</span><span class="o">&gt;=</span> <span class="n">stl_milp</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">k</span><span class="p">])</span>
+                            <span class="n">min_prop</span> <span class="o">=</span> <span class="p">(</span><span class="n">stl_milp</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop_vars&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">prop</span><span class="p">])</span>
+                            <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">min_prop</span><span class="p">,</span> <span class="s1">&#39;min_prop_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+                            <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">minPropLB</span><span class="p">,</span> <span class="s1">&#39;min_prop_lb_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+                            <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">minPropUB</span><span class="p">,</span> <span class="s1">&#39;min_prop_ub_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+
+                    <span class="n">minPropTotal</span> <span class="o">=</span> <span class="p">(</span><span class="n">minPropTotal</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">minPropTotal</span><span class="p">,</span> <span class="s1">&#39;min_prop_total_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_system_constraints_pulp"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.add_system_constraints_pulp">[docs]</a><span class="k">def</span> <span class="nf">add_system_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">capability_distribution</span><span class="p">,</span> <span class="n">bound</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Computes the constraints that capture the system dynamics.</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The PuLP model object.</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - The agent classes given as a dictionary from frozen sets of capabilities</span>
+<span class="sd">    to bitmaps (integers).</span>
+<span class="sd">    - The initial distribution of capabilities at each state.</span>
+<span class="sd">    - Time bound.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The initial time constraints</span>
+
+<span class="sd">        z_{state}_g_0 = \eta_{state}_g</span>
+
+<span class="sd">    is equivalent to</span>
+
+<span class="sd">        \sum_{e=(u, v) \in T} z_e_g_W(e) = \eta_{state}_g</span>
+
+<span class="sd">    because of the definition of the team state at TS states,</span>
+<span class="sd">    where \eta_{state}_g is the number of agents of class g at state {state} at</span>
+<span class="sd">    time 0.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># edge conservation constraints</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">bound</span><span class="o">+</span><span class="mi">2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">g_enc</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">conserve</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="n">k</span><span class="o">-</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]][</span><span class="n">g</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">start</span><span class="p">,</span><span class="n">finish</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">in_edges_iter</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">start</span> <span class="o">==</span> <span class="n">finish</span><span class="p">])</span>
+
+                <span class="c1"># node constraint: team state</span>
+                <span class="n">team_state_eq</span> <span class="o">=</span> <span class="p">(</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="n">conserve</span><span class="p">)</span>
+                <span class="n">mpulp</span> <span class="o">+=</span> <span class="p">(</span><span class="n">ud</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="n">conserve</span><span class="p">),</span> <span class="s1">&#39;team_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">g_enc</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+                <span class="c1"># flow balancing constraint</span>
+                <span class="c1"># Note: This includes self-loops!</span>
+                <span class="n">conserve</span> <span class="o">-=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">g</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">out_edges_iter</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+                <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">conserve</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;conserve_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">g_enc</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+
+    <span class="c1"># initial time constraints - encoding using state variables</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">g_enc</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">finish</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">in_edges_iter</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">finish</span><span class="p">:</span>
+                    <span class="n">conserve</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="n">capability_distribution</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">g_enc</span><span class="p">])</span>
+                    <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">conserve</span><span class="p">,</span> <span class="s1">&#39;init_distrib_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">finish</span><span class="p">,</span><span class="n">g_enc</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">conserve</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">g</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">conserve</span><span class="p">,</span> <span class="s1">&#39;init_distrib_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">finish</span><span class="p">,</span><span class="n">g_enc</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_capability_bitmap"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.compute_capability_bitmap">[docs]</a><span class="k">def</span> <span class="nf">compute_capability_bitmap</span><span class="p">(</span><span class="n">agents</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Computes a bitmap encoding of agents&#39; capabilities. Each capability is</span>
+<span class="sd">    associated with a bit in a binary word of length equal to the number of capabilities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        agents (list): List containing agent information. The iith entry is a tuple (q, cap)</span>
+<span class="sd">            corresponding to the iith agent, where q is the initial state of</span>
+<span class="sd">            the agent and cap is the set of all capabilities that agent has.</span>
+
+<span class="sd">            An example of a valid agents list::</span>
+
+<span class="sd">                agents = [(&#39;q1&#39;, {&#39;VIS&#39;}), (&#39;q3&#39;, {&#39;LID&#39;}), (&#39;q7&#39;, {&#39;LID&#39;,&#39;IR&#39;})]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): Dictionary mapping capabilities to integers representing the</span>
+<span class="sd">        binary words for the capabilities.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">capabilities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">cap</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">cap</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">]))</span>
+    <span class="n">capabilities</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">capabilities</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="mi">1</span><span class="o">&lt;&lt;</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">capabilities</span><span class="p">)}</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Capabilities bitmap: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">capabilities</span></div>
+
+
+<div class="viewcode-block" id="compute_agent_classes"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.compute_agent_classes">[docs]</a><span class="k">def</span> <span class="nf">compute_agent_classes</span><span class="p">(</span><span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Computes the set of agent types w.r.t. capabilities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        agents (list): List of agents, where agents are tuples (q, cap), q is the initial state of</span>
+<span class="sd">            the agent, and cap is the set of capabilities. Agents&#39; identifiers are their</span>
+<span class="sd">            indices in the list.</span>
+<span class="sd">        capabilities (dict): Dictionary of capability class encoding that maps capability classes to binary words</span>
+<span class="sd">            represented as integers.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): Dictionary of agent capability classes that maps frozen (immutable) sets of</span>
+<span class="sd">        capabilities to the binary words encoding the corresponding capability classes.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">g</span><span class="p">):</span> <span class="nb">sum</span><span class="p">([</span><span class="n">capabilities</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">g</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="compute_initial_capability_distribution"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.compute_initial_capability_distribution">[docs]</a><span class="k">def</span> <span class="nf">compute_initial_capability_distribution</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Computes the initial number of agents of each class at each state.</span>
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - List of agents, where agents are tuples (q, cap), q is the initial state of</span>
+<span class="sd">    the agent, and cap is the set of capabilities. Agents&#39; identifiers are their</span>
+<span class="sd">    indices in the list.</span>
+<span class="sd">    - Dictionary of capability encoding that maps capabilities to binary words</span>
+<span class="sd">    represented as integers.</span>
+<span class="sd">    Output</span>
+<span class="sd">    ------</span>
+<span class="sd">    Dictionary from states to distribution of agents from each class. The</span>
+<span class="sd">    distribution is a list of length equal to the number of capabilities, and</span>
+<span class="sd">    each element is the number of agents of having those capabilities (a class).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#Austin, I didnt get to fixing this but the problem is the way he is referencing</span>
+    <span class="c1">#the indexes of the capabilities. I am not sure how to reference these correctly</span>
+    <span class="c1">#without creating all of the capabilities variables.</span>
+    <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">capabilities</span><span class="p">)</span>
+    <span class="n">capability_distribution</span> <span class="o">=</span> <span class="p">{</span><span class="n">u</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="n">nc</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="p">}</span>
+    <span class="c1">#print(capability_distribution)</span>
+    <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">:</span>
+        <span class="c1">#print(&#39;cap: &#39;,capabilities,&#39;g: &#39;,g)</span>
+        <span class="n">g_enc</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">capabilities</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">g</span><span class="p">])</span>
+        <span class="c1">#print(g_enc, state)</span>
+        <span class="n">capability_distribution</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="n">g_enc</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    nc = len(capabilities)</span>
+<span class="sd">    capability_distribution = {u: [0]*(2**nc) for u in ts.g}</span>
+<span class="sd">    for state, cap in agents:</span>
+<span class="sd">        g = sum([capabilities[c] for c in cap])</span>
+<span class="sd">        capability_distribution[state][g] += 1</span>
+
+<span class="sd">    print(capability_distribution)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">capability_distribution</span></div>
+
+
+<div class="viewcode-block" id="computeRobustnessUpperBound"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.computeRobustnessUpperBound">[docs]</a><span class="k">def</span> <span class="nf">computeRobustnessUpperBound</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">agents</span><span class="p">,</span><span class="n">formula</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Computes a loose upper bound on the robustness value.</span>
+
+<span class="sd">    The robustness value measures whether there are enough agents to satisfy the</span>
+<span class="sd">    temporal logic specification in the given transition system. A positive</span>
+<span class="sd">    robustness value indicates there are more than enough required agents to</span>
+<span class="sd">    satisfy the formula. A negative robustness value indicates that there</span>
+<span class="sd">    are not enough required agents to satisfy the formula.</span>
+
+<span class="sd">    This function computes an upper bound on the robustness value for a given</span>
+<span class="sd">    transition system (TS), set of agents, and CaTL formula. This upper bound can</span>
+<span class="sd">    be used as a &quot;sanity check&quot; to test if the formula is infeasible for the</span>
+<span class="sd">    given TS and set of agents. If the upper bound is negative, then the</span>
+<span class="sd">    problem is infeasible. If the upper bound is positive, then it is *possible*</span>
+<span class="sd">    that the problem is feasible.</span>
+
+<span class="sd">    If the upper bound is negative, there is no point in solving the associated</span>
+<span class="sd">    MILP. The problem is infeasible.</span>
+
+<span class="sd">    **Note:** This function does *not* take into account the travel time between</span>
+<span class="sd">    regions in the TS.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ts:                 The transition system</span>
+<span class="sd">        agents (list):      List of agents in the system. Each agent has the form ``(initial_state, {capability1, capability2,...})``.</span>
+<span class="sd">        formula:            Either a string or a catl.CATLFormula object containing the formula. </span>
+<span class="sd">                            If a string, it is converted into a catl.CATLFormula object by</span>
+<span class="sd">                            calling ``formula = CATLFormula.from_formula(formula)``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float):    Upper bound on the robustness value.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># If formula is a string, convert to CATLFormula object</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">formula</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+
+    <span class="c1">#Creates a dict that tells how many of each capability are available in the full team</span>
+    <span class="c1"># TODO determine if formula.capabilities() is too expensive to call here (it&#39;s recursive)</span>
+    <span class="c1">#      had issue where there might be a capability in the formula not represented by an agent</span>
+    <span class="n">capDict</span> <span class="o">=</span><span class="p">{</span><span class="n">cap</span><span class="p">:</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">cap</span> <span class="ow">in</span> <span class="n">agent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">])</span> <span class="k">for</span> <span class="n">cap</span> <span class="ow">in</span> <span class="n">formula</span><span class="o">.</span><span class="n">capabilities</span><span class="p">()}</span>
+    <span class="n">ub</span> <span class="o">=</span>  <span class="n">get_ub</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ub</span></div>
+
+
+
+<div class="viewcode-block" id="get_ub"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.get_ub">[docs]</a><span class="k">def</span> <span class="nf">get_ub</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Uses recursive relationships to compute the excess capacity of the formula with respect to the team&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">PRED</span><span class="p">:</span>
+        <span class="n">ub</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">capDict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="n">formula</span><span class="o">.</span><span class="n">proposition</span>
+        <span class="n">numRegions</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prop</span> <span class="ow">in</span> <span class="n">ud</span><span class="p">[</span><span class="s1">&#39;prop&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">ud</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">cr</span> <span class="ow">in</span> <span class="n">formula</span><span class="o">.</span><span class="n">capability_requests</span><span class="p">:</span>
+            <span class="n">ub</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span><span class="n">capDict</span><span class="p">[</span><span class="n">cr</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">-</span><span class="n">numRegions</span><span class="o">*</span><span class="n">cr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ub</span>
+    <span class="k">elif</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">AND</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">([</span><span class="n">get_ub</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">)</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">formula</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">UNTIL</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">get_ub</span><span class="p">(</span><span class="n">formula</span><span class="o">.</span><span class="n">left</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">),</span> <span class="n">get_ub</span><span class="p">(</span><span class="n">formula</span><span class="o">.</span><span class="n">right</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">OR</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">get_ub</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">)</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">formula</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">formula</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Operation</span><span class="o">.</span><span class="n">ALWAYS</span><span class="p">,</span> <span class="n">Operation</span><span class="o">.</span><span class="n">EVENT</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">get_ub</span><span class="p">(</span><span class="n">formula</span><span class="o">.</span><span class="n">child</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">capDict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="constrain_grave_state_pulp"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.constrain_grave_state_pulp">[docs]</a><span class="k">def</span> <span class="nf">constrain_grave_state_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span><span class="n">ast</span><span class="p">,</span><span class="n">agent_classes</span><span class="p">,</span><span class="n">grave_region</span><span class="p">):</span>
+   
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;z_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">grave_region</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="c1"># name_val = m.getVarByName(name)</span>
+            <span class="c1"># m.addConstr(name_val == 0, &#39;grave_reject_{}_{}_{}&#39;.format(str(grave_region),g[1],k))</span>
+            <span class="n">name_val</span> <span class="o">=</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">variablesDict</span><span class="p">()[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">name_val</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;grave_reject_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">grave_region</span><span class="p">),</span><span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">k</span><span class="p">)</span></div>
+    
+
+
+<div class="viewcode-block" id="create_system_variables_pulp"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.create_system_variables_pulp">[docs]</a><span class="k">def</span> <span class="nf">create_system_variables_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpInteger</span><span class="p">,</span><span class="n">num_agents</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">regularize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Creates the state and transition variables associated with the given</span>
+<span class="sd">    transition system using the PuLP framework.</span>
+
+<span class="sd">    The state variables are z_{state}_{cap}_k, where {state} is a node in the TS</span>
+<span class="sd">    graph, {cap} is a capability class encoded as an integer, and k is the time</span>
+<span class="sd">    step.</span>
+
+<span class="sd">    The transition variables are z_{state1}_{state2}_{cap}_k, where {state1} and</span>
+<span class="sd">    {state2} define the transition, {cap} is a capability class encoded as an</span>
+<span class="sd">    integer, and k is the time step.</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The PuLP model object.</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - The agent classes given as a dictionary from frozen sets of capabilities</span>
+<span class="sd">    to bitmaps (integers).</span>
+<span class="sd">    - Time bound.</span>
+<span class="sd">    - Variable type (default: integer).</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Data structure holding the variables is a list of list of variables, e.g.,</span>
+
+<span class="sd">        d[&#39;vars&#39;][k][g] is the z_{q/e}_bitmap(g)_k</span>
+
+<span class="sd">    where d is the dictionary of attributes for a node q or an edge e in the TS,</span>
+<span class="sd">    g is an agent class (frozen set of capabilities), bitmap(g) is the binary</span>
+<span class="sd">    encoding of g as an integer, and k is the time step.</span>
+<span class="sd">    Also, d[&#39;vars&#39;] is a list of length `bound+1&#39;, d[&#39;vars&#39;][k] is a dictionary</span>
+<span class="sd">    from frozen sets to gurobi variables.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># node variables</span>
+    <span class="c1">#print(ts.g.nodes(data=True))</span>
+
+    <span class="n">newObj</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpAffineExpression</span><span class="p">()</span> <span class="c1">#Create objective function for total travel time</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># initialize node variables list</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bound</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;z_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+            <span class="c1"># Use PuLP variables instead of Gurobi variables.</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">g</span><span class="p">:</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">enc</span><span class="p">),</span> <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upBound</span><span class="o">=</span><span class="n">num_agents</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="n">vtype</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">enc</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+
+    <span class="c1"># edge variables</span>
+    
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># initialize edge variables list</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">bound</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Use &#39;n1&#39; in the name instead of &#39;-1&#39;</span>
+                <span class="c1"># This avoids naming issues in PuLP. PuLP simply converts `-` symbols</span>
+                <span class="c1"># into underscores, which creates problems in the read_sol_data function.</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;z_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">_n1&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;z_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">edgeList</span> <span class="o">=</span> <span class="p">{</span><span class="n">g</span><span class="p">:</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">enc</span><span class="p">),</span> <span class="n">cat</span><span class="o">=</span><span class="n">vtype</span><span class="p">,</span> <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upBound</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">num_agents</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">enc</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;vars&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edgeList</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edgeList</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">newObj</span> <span class="o">+=</span> <span class="n">alpha</span><span class="o">/</span><span class="p">(</span><span class="n">bound</span><span class="o">*</span><span class="n">num_agents</span><span class="p">)</span><span class="o">*</span><span class="n">edge</span><span class="o">*</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="c1">#This is the weighted total travel time</span>
+    <span class="n">normTravelTime</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="p">(</span><span class="s1">&#39;normTravelTime&#39;</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpContinuous</span><span class="p">,</span> <span class="n">lowBound</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upBound</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">normTravelTime</span> <span class="o">==</span> <span class="n">newObj</span><span class="p">,</span> <span class="s2">&quot;travelTimeEquality&quot;</span>
+
+    <span class="k">if</span> <span class="n">regularize</span><span class="p">:</span>
+        <span class="c1"># mpulp.setObjectiveN(alpha*newObj,mpulp.NumObj)</span>
+        <span class="n">mpulp</span> <span class="o">+=</span> <span class="n">alpha</span><span class="o">*</span><span class="n">newObj</span><span class="p">,</span> <span class="s2">&quot;Objective Function&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="extract_propositions"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.extract_propositions">[docs]</a><span class="k">def</span> <span class="nf">extract_propositions</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ast</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns the set of propositions in the formula, and checks that it is</span>
+<span class="sd">    included in the transitions system.</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - The AST of the CaTL specification formula.</span>
+
+<span class="sd">    Output</span>
+<span class="sd">    ------</span>
+<span class="sd">    Set of propositions in the specification formula.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#print [d[&#39;prop&#39;] for _, d in ts.g.nodes(data=True)]</span>
+    <span class="n">ts_propositions</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;prop&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+    <span class="n">formula_propositions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">propositions</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="n">formula_propositions</span> <span class="o">&lt;=</span> <span class="n">ts_propositions</span><span class="p">,</span> \
+                                <span class="s1">&#39;There are unknown propositions in the formula!&#39;</span>
+    <span class="k">return</span> <span class="n">formula_propositions</span></div>
+
+
+
+
+<div class="viewcode-block" id="route_planning"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.route_planning">[docs]</a><span class="k">def</span> <span class="nf">route_planning</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> 
+                    <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">replan_req</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">regularize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">upperBound</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">solver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">compute_IIS</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">compress_files</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">solver_time_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">solver_threads</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Performs route planning for agents ``agents`` moving in a transition system</span>
+<span class="sd">    ``ts`` such that the CaTL specification ``formula`` is satisfied.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        inputs:</span>
+<span class="sd">        ts:</span>
+<span class="sd">        agents:</span>
+<span class="sd">        formula (str):</span>
+<span class="sd">        bound:</span>
+<span class="sd">        file_name (str):</span>
+<span class="sd">        replan_req (bool):</span>
+<span class="sd">        robust (bool):</span>
+<span class="sd">        regularize (bool):</span>
+<span class="sd">        alpha (float):</span>
+<span class="sd">        upperBound (bool):</span>
+<span class="sd">        load_previous:</span>
+<span class="sd">        solver_name (str):</span>
+<span class="sd">        compute_IIS (bool):</span>
+<span class="sd">        verbose:</span>
+<span class="sd">        compress_files (bool):</span>
+<span class="sd">        solver_time_limit (float): Time limit on the MILP solution process. The MILP will stop after</span>
+<span class="sd">                                    this amount of time. If no time limit is specified, the MILP will </span>
+<span class="sd">                                    run to completion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): Tuple containing the following elements:</span>
+
+<span class="sd">            - **mpulp**: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</span>
+<span class="sd">            - **replan_data**: Object containing the following fields:</span>
+<span class="sd">                - TODO: [INSERT HERE]</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - List of agents, where agents are tuples (q, cap), q is the initial state</span>
+<span class="sd">    of the agent, and cap is the set of capabilities. Agents&#39; identifiers are</span>
+<span class="sd">    their indices in the list.</span>
+<span class="sd">    - The CaTL specification formula.</span>
+<span class="sd">    - The time bound used in the encoding (default: computed from CaTL formula).</span>
+
+<span class="sd">    Output</span>
+<span class="sd">    ------</span>
+<span class="sd">    TODO: TBD</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># print formula</span>
+    <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+    <span class="c1"># print ast</span>
+    <span class="k">if</span> <span class="n">bound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+    <span class="c1"># create MILP</span>
+    <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">load_old_files</span><span class="p">:</span>
+        <span class="c1"># TODO: Create method to load files using PuLP     </span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Loading old files not implemented.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">mpulp</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;iitchs_prob&quot;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+
+    <span class="c1"># create agent system variables</span>
+    <span class="n">capabilities</span> <span class="o">=</span> <span class="n">compute_capability_bitmap</span><span class="p">(</span><span class="n">agents</span><span class="p">)</span>
+    <span class="n">agent_classes</span> <span class="o">=</span> <span class="n">compute_agent_classes</span><span class="p">(</span><span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">)</span>
+    <span class="n">agent_capability_map</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ag</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">:</span>
+        <span class="n">agent_capability_map</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">agent_classes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="n">ag</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="c1"># create system variables</span>
+    <span class="c1"># create_system_variables(m, ts, agent_classes, bound,num_agents=len(agents),regularize=regularize,alpha=alpha)</span>
+    <span class="n">create_system_variables_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span><span class="n">num_agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span><span class="n">regularize</span><span class="o">=</span><span class="n">regularize</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    
+
+    <span class="c1"># add system constraints</span>
+    <span class="n">capability_distribution</span> <span class="o">=</span> <span class="n">compute_initial_capability_distribution</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span>
+                                                       <span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">)</span>
+
+
+    <span class="c1"># add_system_constraints(m, ts, agent_classes, capability_distribution, bound)</span>
+    <span class="n">add_system_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">capability_distribution</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+
+
+    <span class="c1"># add CMTL formula constraints</span>
+    <span class="n">stl</span> <span class="o">=</span> <span class="n">catl2stl</span><span class="p">(</span><span class="n">ast</span><span class="p">)</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">))</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">stl</span><span class="o">.</span><span class="n">variables</span><span class="p">()}</span>
+    <span class="c1">#print stl</span>
+    <span class="k">if</span> <span class="n">upperBound</span><span class="p">:</span>
+        <span class="c1">#Compute and add a loose upperbound to the robustness value</span>
+        <span class="n">ub</span> <span class="o">=</span> <span class="n">computeRobustnessUpperBound</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">agents</span><span class="p">,</span><span class="n">ast</span><span class="p">)</span>
+        <span class="c1">#print &quot;Upper Bound &quot;, ub</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># TODO: kind of a hack</span>
+    <span class="c1"># stl_milp = stl2milp(stl, ranges=ranges, model=m, robust=robust)</span>
+    <span class="n">stl_milp</span> <span class="o">=</span> <span class="n">stl2milp_pulp</span><span class="p">(</span><span class="n">stl</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="n">stl_milp</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># set big M</span>
+    <span class="n">stl_milp</span><span class="o">.</span><span class="n">translate</span><span class="p">()</span>
+
+
+    <span class="c1"># add proposition constraints</span>
+    <span class="c1"># add_proposition_constraints(m, stl_milp, ts, ast, capabilities,</span>
+    <span class="c1">#                         agent_classes, bound)</span>
+    <span class="n">add_proposition_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">stl_milp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ast</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+
+    <span class="c1"># constrain_grave_state(m,ast,agent_classes,inputs.replan_grave)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s1">&#39;replan_grave&#39;</span><span class="p">):</span>
+        <span class="n">constrain_grave_state_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span><span class="n">ast</span><span class="p">,</span><span class="n">agent_classes</span><span class="p">,</span><span class="n">inputs</span><span class="o">.</span><span class="n">replan_grave</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">load_old_files</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: loading old files not implemented.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">pass</span>
+        <span class="c1"># m = gurobipy.read(reload_file+&#39;.lp&#39;)</span>
+        <span class="c1"># m.read(reload_file+&#39;.sol&#39;)</span>
+        <span class="c1"># if hasattr(inputs,&#39;timeLimit&#39;):</span>
+        <span class="c1">#     old_m.params.timeLimit = inputs.timeLimit</span>
+        <span class="c1"># old_m.optimize()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># run optimizer</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="s1">&#39;timeLimit&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># The variable solver_time_limit takes precedence over inputs.timeLimit</span>
+            <span class="n">solver_time_limit</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">timeLimit</span>
+
+        <span class="c1"># TODO: Add multithreading capability to SCIP and CBC.</span>
+        <span class="c1">#       Currently this only works for GUROBI.</span>
+
+
+        <span class="c1"># # Set up the solver type and time limit</span>
+        <span class="k">if</span> <span class="n">solver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Use the default solver. Currently SCIP.</span>
+            <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">SCIP</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_object</span><span class="o">.</span><span class="n">timeLimit</span> <span class="o">=</span> <span class="n">solver_time_limit</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span><span class="p">:</span>
+            <span class="c1"># GUROBI uses the Gurobipy interface.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Options can be set by passing in keyword arguments equivalent to Gurobi parameter</span>
+            <span class="c1"># names to the constructor.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Example:</span>
+            <span class="c1">#   solver = pulp.GUROBI(</span>
+            <span class="c1">#       OutputFlag=0,</span>
+            <span class="c1">#       TimeLimit=600,</span>
+            <span class="c1">#       Threads=1</span>
+            <span class="c1">#   )</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">solver_threads</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">options</span><span class="p">[</span><span class="s1">&#39;Threads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver_threads</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">options</span><span class="p">[</span><span class="s1">&#39;OutputFlag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
+                <span class="n">options</span><span class="p">[</span><span class="s1">&#39;TimeLimit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver_time_limit</span>
+
+            <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;GUROBI_CMD&#39;</span><span class="p">:</span>
+            <span class="c1"># GUROBI_CMD calls the Gurobi command line solver.</span>
+            <span class="c1"># Options can be set for the solver via pulp by passing a list of tuples to the </span>
+            <span class="c1"># &quot;options&quot; keyword argument when creating the solver. For each tuple, the first</span>
+            <span class="c1"># entry must be the string name of the option, and the second entry must be the</span>
+            <span class="c1"># value that option should have. The option names are the same as those in the </span>
+            <span class="c1"># Gurobi documentation.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Example:</span>
+            <span class="c1">#   solver = pulp.GUROBI_CMD(options=[</span>
+            <span class="c1">#       (&quot;OutputFlag&quot;, 0),</span>
+            <span class="c1">#       (&quot;TimeLimit&quot;, 600)</span>
+            <span class="c1">#   ])</span>
+
+            <span class="c1"># Set verbosity</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">NOTE: Do not use GUROBI_CMD solver with the iitchs_base benchmarking code.</span><span class="se">\n</span><span class="s2">It is impossible to distinguish between infeasible and timed-out solutions.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">output_flag</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output_flag</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># Set threads</span>
+            <span class="k">if</span> <span class="n">solver_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_threads</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Gurobi default value; uses as many as necessary</span>
+
+            <span class="c1"># Set solver_time_limit</span>
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">threads</span><span class="o">=</span><span class="n">solver_threads</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;TimeLimit&quot;</span><span class="p">,</span><span class="n">solver_time_limit</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;OutputFlag&quot;</span><span class="p">,</span> <span class="n">output_flag</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">threads</span><span class="o">=</span><span class="n">solver_threads</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;OutputFlag&quot;</span><span class="p">,</span> <span class="n">output_flag</span><span class="p">)])</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SCIP&#39;</span> <span class="ow">or</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SCIP_CMD&#39;</span><span class="p">:</span>
+            <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">SCIP</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_object</span><span class="o">.</span><span class="n">timeLimit</span> <span class="o">=</span> <span class="n">solver_time_limit</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;COIN_CMD&#39;</span><span class="p">:</span>
+            <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">COIN_CMD</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_object</span><span class="o">.</span><span class="n">timeLimit</span> <span class="o">=</span> <span class="n">solver_time_limit</span>
+        <span class="k">elif</span> <span class="n">solver</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;PULP_CBC_CMD&#39;</span><span class="p">:</span>
+            <span class="n">solver_object</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">PULP_CBC_CMD</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">solver_time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">solver_object</span><span class="o">.</span><span class="n">timeLimit</span> <span class="o">=</span> <span class="n">solver_time_limit</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Error: Solver &quot;</span> <span class="o">+</span> <span class="n">solver</span><span class="o">+</span> <span class="s2">&quot; is not currently supported.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># # Set the solving function</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">solve_function</span> <span class="o">=</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solve</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">solve_function</span> <span class="o">=</span> <span class="n">suppress_output</span><span class="p">(</span><span class="n">mpulp</span><span class="o">.</span><span class="n">solve</span><span class="p">)</span>
+
+        <span class="c1"># # Solve the problem.</span>
+        <span class="c1"># # This is equivalent to mpulp.solve(solver=pulp.SOLVER_NAME_HERE())</span>
+        <span class="n">solve_function</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">solver_object</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusOptimal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;&quot;Optimal objective LP&quot;: </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">mpulp</span><span class="o">.</span><span class="n">objective</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusNotSolved</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model was not solved.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusInfeasible</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model is infeasible.&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span> <span class="ow">and</span> <span class="n">compute_IIS</span><span class="p">:</span>
+                <span class="c1"># Compute the infeasible set, if using Gurobi</span>
+                <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">computeIIS</span><span class="p">()</span>
+                <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;infeasible_set.ilp&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusUnbounded</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model is unbounded.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Model is undefined.&quot;</span><span class="p">)</span>
+            
+    <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">load_old_files</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="c1"># TODO: This isn&#39;t currently doing anything...file_name is the name of a directory, and so file_name+&quot;.mps&quot; is invalid.</span>
+        <span class="n">mpulp</span><span class="o">.</span><span class="n">writeMPS</span><span class="p">(</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;.mps&quot;</span><span class="p">)</span>
+        <span class="n">mpulp</span><span class="o">.</span><span class="n">writeLP</span><span class="p">(</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;.lp&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;.sol&quot;</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: unable to write the model.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">write_sol</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;.sol&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Compress the output files, which can be fairly large (~8-45 MB)</span>
+        <span class="k">if</span> <span class="n">compress_files</span><span class="p">:</span>
+            <span class="n">lp_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.lp&quot;</span>
+            <span class="n">mps_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.mps&quot;</span>
+            <span class="n">sol_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.sol&quot;</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">lp_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp_file</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">mps_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mps_file</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">sol_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sol_file</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp_zip</span><span class="p">,</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mps_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mps_zip</span><span class="p">,</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sol_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sol_zip</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">lp_file</span><span class="p">,</span> <span class="n">lp_zip</span><span class="p">)</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">mps_file</span><span class="p">,</span> <span class="n">mps_zip</span><span class="p">)</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">sol_file</span><span class="p">,</span> <span class="n">sol_zip</span><span class="p">)</span>
+            
+            <span class="c1"># Delete the original files</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">lp_name</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">lp_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Removing lp file did not work.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">mps_name</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mps_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Removing mps file did not work.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">sol_name</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">sol_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Removing sol file did not work.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">replan_req</span><span class="p">:</span>
+        <span class="c1"># TODO: Update this to PuLP</span>
+        <span class="c1">#print(&quot;stuck here&quot;)</span>
+        <span class="n">replan_time</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">replan_time</span>
+        <span class="n">replan_region</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">replan_region</span>
+        <span class="n">replan_grave</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">replan_grave</span>
+        <span class="n">replan_num</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">replan_num</span>
+        <span class="n">replan_cap</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">replan_cap</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: replan_route not currently implemented.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># replan_route(m,agents,ts,ast,capabilities,agent_classes,stl_milp,replan_region,replan_cap,replan_time,replan_num,replan_grave)</span>
+
+    <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusOptimal</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;&quot;Optimal objective LP&quot;: </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">mpulp</span><span class="o">.</span><span class="n">objective</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusNotSolved</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model was not solved.&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusInfeasible</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model is infeasible.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span> <span class="ow">and</span> <span class="n">compute_IIS</span><span class="p">:</span>
+            <span class="c1"># Compute the infeasible set, if using Gurobi</span>
+            <span class="c1"># TODO: Include GUROBI_CMD?</span>
+            <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">computeIIS</span><span class="p">()</span>
+            <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;infeasible_set.ilp&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusUnbounded</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Model is unbounded.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Model is undefined.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">replan_req</span><span class="p">:</span>
+        <span class="n">mpulp</span><span class="o">.</span><span class="n">writeMPS</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.mps&quot;</span><span class="p">)</span>
+        <span class="n">mpulp</span><span class="o">.</span><span class="n">writeLP</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.lp&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span> <span class="ow">or</span> <span class="n">mpulp</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;GUROBI_CMD&#39;</span><span class="p">:</span>
+            <span class="n">mpulp</span><span class="o">.</span><span class="n">solverModel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.sol&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">write_sol</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.sol&quot;</span><span class="p">)</span>
+
+
+
+
+    <span class="n">replan_data</span> <span class="o">=</span> <span class="n">empty_struct</span><span class="p">()</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">ast</span> <span class="o">=</span> <span class="n">ast</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">agent_classes</span> <span class="o">=</span> <span class="n">agent_classes</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">capabilities</span> <span class="o">=</span> <span class="n">capabilities</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">stl_milp</span> <span class="o">=</span> <span class="n">stl_milp</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">agents</span> <span class="o">=</span> <span class="n">agents</span>
+    <span class="n">replan_data</span><span class="o">.</span><span class="n">agent_capability_map</span> <span class="o">=</span> <span class="n">agent_capability_map</span>
+
+    <span class="k">return</span> <span class="n">mpulp</span><span class="p">,</span> <span class="n">replan_data</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="generate_MILP_problems"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.route_planning.generate_MILP_problems">[docs]</a><span class="k">def</span> <span class="nf">generate_MILP_problems</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> 
+                    <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">regularize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">upperBound</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">replan_grave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">compress_files</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Similar to route_planning(), but simply generates the MILP .lp / .mps problem files</span>
+<span class="sd">    without actually solving them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        inputs:</span>
+<span class="sd">        ts:</span>
+<span class="sd">        agents:</span>
+<span class="sd">        formula (str):</span>
+<span class="sd">        bound:</span>
+<span class="sd">        file_name (str):</span>
+<span class="sd">        replan_req (bool):</span>
+<span class="sd">        robust (bool):</span>
+<span class="sd">        regularize (bool):</span>
+<span class="sd">        alpha (float):</span>
+<span class="sd">        upperBound (bool):</span>
+<span class="sd">        load_previous:</span>
+<span class="sd">        solver_name (str):</span>
+<span class="sd">        compute_IIS (bool):</span>
+<span class="sd">        verbose:</span>
+<span class="sd">        compress_files (bool):</span>
+<span class="sd">        solver_time_limit (float): Time limit on the MILP solution process. The MILP will stop after</span>
+<span class="sd">                                    this amount of time. If no time limit is specified, the MILP will </span>
+<span class="sd">                                    run to completion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): Tuple containing the following elements:</span>
+
+<span class="sd">            - **mpulp**: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</span>
+<span class="sd">            - **replan_data**: Object containing the following fields:</span>
+<span class="sd">                - TODO: [INSERT HERE]</span>
+
+<span class="sd">    Input</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The transition system specifying the environment.</span>
+<span class="sd">    - List of agents, where agents are tuples (q, cap), q is the initial state</span>
+<span class="sd">    of the agent, and cap is the set of capabilities. Agents&#39; identifiers are</span>
+<span class="sd">    their indices in the list.</span>
+<span class="sd">    - The CaTL specification formula.</span>
+<span class="sd">    - The time bound used in the encoding (default: computed from CaTL formula).</span>
+
+<span class="sd">    Output</span>
+<span class="sd">    ------</span>
+<span class="sd">    TODO: TBD</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># print formula</span>
+    <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+    <span class="c1"># print ast</span>
+    <span class="k">if</span> <span class="n">bound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+
+    <span class="c1"># create MILP</span>
+    <span class="n">mpulp</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;iitchs_prob&quot;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+
+    <span class="c1"># create agent system variables</span>
+    <span class="n">capabilities</span> <span class="o">=</span> <span class="n">compute_capability_bitmap</span><span class="p">(</span><span class="n">agents</span><span class="p">)</span>
+    <span class="n">agent_classes</span> <span class="o">=</span> <span class="n">compute_agent_classes</span><span class="p">(</span><span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">)</span>
+    <span class="n">agent_capability_map</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ag</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">:</span>
+        <span class="n">agent_capability_map</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">agent_classes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">agent_classes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="n">ag</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="c1"># create system variables</span>
+    <span class="c1"># create_system_variables(m, ts, agent_classes, bound,num_agents=len(agents),regularize=regularize,alpha=alpha)</span>
+    <span class="n">create_system_variables_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span><span class="n">num_agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span><span class="n">regularize</span><span class="o">=</span><span class="n">regularize</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    
+
+    <span class="c1"># add system constraints</span>
+    <span class="n">capability_distribution</span> <span class="o">=</span> <span class="n">compute_initial_capability_distribution</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span>
+                                                       <span class="n">agents</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">)</span>
+
+
+    <span class="c1"># add_system_constraints(m, ts, agent_classes, capability_distribution, bound)</span>
+    <span class="n">add_system_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">capability_distribution</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+
+
+    <span class="c1"># add CMTL formula constraints</span>
+    <span class="n">stl</span> <span class="o">=</span> <span class="n">catl2stl</span><span class="p">(</span><span class="n">ast</span><span class="p">)</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">))</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">stl</span><span class="o">.</span><span class="n">variables</span><span class="p">()}</span>
+    <span class="c1">#print stl</span>
+    <span class="k">if</span> <span class="n">upperBound</span><span class="p">:</span>
+        <span class="c1">#Compute and add a loose upperbound to the robustness value</span>
+        <span class="n">ub</span> <span class="o">=</span> <span class="n">computeRobustnessUpperBound</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">agents</span><span class="p">,</span><span class="n">ast</span><span class="p">)</span>
+        <span class="c1">#print &quot;Upper Bound &quot;, ub</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># TODO: kind of a hack</span>
+    <span class="c1"># stl_milp = stl2milp(stl, ranges=ranges, model=m, robust=robust)</span>
+    <span class="n">stl_milp</span> <span class="o">=</span> <span class="n">stl2milp_pulp</span><span class="p">(</span><span class="n">stl</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="n">stl_milp</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># set big M</span>
+    <span class="n">stl_milp</span><span class="o">.</span><span class="n">translate</span><span class="p">()</span>
+
+
+    <span class="c1"># add proposition constraints</span>
+    <span class="c1"># add_proposition_constraints(m, stl_milp, ts, ast, capabilities,</span>
+    <span class="c1">#                         agent_classes, bound)</span>
+    <span class="n">add_proposition_constraints_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span> <span class="n">stl_milp</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ast</span><span class="p">,</span> <span class="n">capabilities</span><span class="p">,</span> <span class="n">agent_classes</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+
+    <span class="c1"># constrain_grave_state(m,ast,agent_classes,inputs.replan_grave)</span>
+    <span class="k">if</span> <span class="n">replan_grave</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">constrain_grave_state_pulp</span><span class="p">(</span><span class="n">mpulp</span><span class="p">,</span><span class="n">ast</span><span class="p">,</span><span class="n">agent_classes</span><span class="p">,</span><span class="n">replan_grave</span><span class="p">)</span>
+
+
+    <span class="c1"># Save the problem files</span>
+    <span class="n">lp_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.lp&quot;</span>
+    <span class="n">mps_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.mps&quot;</span>
+
+    <span class="n">mpulp</span><span class="o">.</span><span class="n">writeLP</span><span class="p">(</span><span class="n">lp_name</span><span class="p">)</span>
+    <span class="n">mpulp</span><span class="o">.</span><span class="n">writeMPS</span><span class="p">(</span><span class="n">mps_name</span><span class="p">)</span>
+
+    <span class="c1"># Compress the output files, which can be fairly large (~8-45 MB)</span>
+    <span class="k">if</span> <span class="n">compress_files</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">lp_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp_file</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">mps_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mps_file</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp_zip</span><span class="p">,</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mps_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mps_zip</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">lp_file</span><span class="p">,</span> <span class="n">lp_zip</span><span class="p">)</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">mps_file</span><span class="p">,</span> <span class="n">mps_zip</span><span class="p">)</span>
+        
+        <span class="c1"># Delete the original files</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">lp_name</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">lp_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Removing lp file did not work.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">mps_name</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mps_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Removing mps file did not work.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp_name</span><span class="si">}</span><span class="s2">.gz&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mps_name</span><span class="si">}</span><span class="s2">.gz&quot;</span>
+    
+    <span class="k">return</span> <span class="n">lp_name</span><span class="p">,</span> <span class="n">mps_name</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

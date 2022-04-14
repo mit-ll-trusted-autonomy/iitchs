@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>main &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for main</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">IITCHS main function</span>
+
+<span class="sd">Entry point for the IITCHS code.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</span>
+
+<span class="c1"># This material is based upon work supported by the Under Secretary of Defense for </span>
+<span class="c1"># Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any </span>
+<span class="c1"># opinions, findings, conclusions or recommendations expressed in this material </span>
+<span class="c1"># are those of the author(s) and do not necessarily reflect the views of the Under </span>
+<span class="c1"># Secretary of Defense for Research and Engineering.</span>
+
+<span class="c1"># (C) 2021 Massachusetts Institute of Technology.</span>
+
+<span class="c1"># Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</span>
+
+<span class="c1"># The software/firmware is provided to you on an As-Is basis</span>
+
+<span class="c1"># Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS </span>
+<span class="c1"># Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. </span>
+<span class="c1"># Government rights in this work are defined by DFARS 252.227-7013 or DFARS </span>
+<span class="c1"># 252.227-7014 as detailed above. Use of this work other than as specifically </span>
+<span class="c1"># authorized by the U.S. Government may violate any copyrights that exist in this </span>
+<span class="c1"># work.</span>
+
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">Error</span><span class="p">,</span> <span class="n">deepcopy</span>
+
+<span class="c1"># For creating Output File Directories, if they don&#39;t exist.</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># For debugging purposes</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pdb</span>
+
+
+<span class="kn">from</span> <span class="nn">catl_planning.route_planning</span> <span class="kn">import</span> <span class="n">route_planning</span><span class="p">,</span> <span class="n">compute_agent_classes</span><span class="p">,</span> <span class="n">compute_capability_bitmap</span>
+<span class="kn">from</span> <span class="nn">catl_planning.traj_planner</span> <span class="kn">import</span> <span class="n">get_agent_capabilities</span><span class="p">,</span> <span class="n">get_agent_map</span><span class="p">,</span> <span class="n">read_sol_data</span><span class="p">,</span> <span class="n">run_planner</span><span class="p">,</span> <span class="n">run_planner_cpp</span>
+<span class="kn">from</span> <span class="nn">catl_planning.visualization</span> <span class="kn">import</span> <span class="n">show_environment</span>
+<span class="kn">from</span> <span class="nn">catl_planning.pure_pursuit</span> <span class="kn">import</span> <span class="n">sim_dynamics</span>
+<span class="kn">from</span> <span class="nn">catl_planning.kml_gen</span> <span class="kn">import</span> <span class="n">gen_kml_file</span>
+<span class="kn">from</span> <span class="nn">catl_planning.kml_gen</span> <span class="kn">import</span> <span class="n">gen_replan_kml_file</span>
+<span class="kn">from</span> <span class="nn">catl_planning.kml_gen</span> <span class="kn">import</span> <span class="n">txt_output</span> <span class="k">as</span> <span class="n">txt_file_gen</span>
+<span class="kn">from</span> <span class="nn">catl_planning.load_sol</span> <span class="kn">import</span> <span class="n">load_sol</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">catl_planning.decomposition_functions</span> <span class="kn">import</span> <span class="n">decompose</span>
+    <span class="n">CAN_DECOMPOSE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">ioe</span><span class="p">:</span>
+    <span class="c1"># can happen if Z3 bindings not available</span>
+    <span class="n">CAN_DECOMPOSE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">from</span> <span class="nn">catl_planning.reduced_ts</span> <span class="kn">import</span> <span class="n">reduce_ts</span>
+
+<span class="kn">from</span> <span class="nn">lomap.classes.ts</span> <span class="kn">import</span> <span class="n">Ts</span>
+
+<span class="kn">from</span> <span class="nn">yaml_parsing</span> <span class="kn">import</span> <span class="n">get_state_dictionary</span>
+
+<span class="kn">from</span> <span class="nn">pulp.constants</span> <span class="kn">import</span> <span class="n">LpStatusNotSolved</span><span class="p">,</span> <span class="n">LpSolutionInfeasible</span>
+
+
+<span class="k">class</span> <span class="nc">empty_struct</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="run_cs_run"><a class="viewcode-back" href="../main_py.html#main.run_cs_run">[docs]</a><span class="k">def</span> <span class="nf">run_cs_run</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs an IITCHS routine which generates capability schedules, assigns agents to capability schedules, </span>
+<span class="sd">    then performs low-level trajectory planning for agents to satisfy their capability schedules. </span>
+<span class="sd">    A plot of the agents&#39; final low-level trajectories is displayed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        m: The casefile module being run.</span>
+<span class="sd">        args: An object returned from calling ``parse_args()`` on an argparse object. The attribute </span>
+<span class="sd">            ``args.solver`` can be set to ``SCIP``, ``GUROBI``, or ``GUROBI_CMD`` to use either the SCIP or GUROBI solver, respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m</span><span class="o">.</span><span class="n">replan_req</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">Ts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+        <span class="k">assert</span> <span class="s1">&#39;grave&#39;</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;prop&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">show_visuals</span><span class="p">:</span>
+        <span class="n">show_environment</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_limit</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#Run the optimization</span>
+    <span class="n">GurModel</span><span class="p">,</span><span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">agents</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">file_name</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="p">,</span> <span class="n">replan_req</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">replan_req</span><span class="p">,</span><span class="n">robust</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">robust</span><span class="p">,</span><span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">solver</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span><span class="n">solver_time_limit</span><span class="o">=</span><span class="n">time_limit</span><span class="p">)</span>
+
+    <span class="c1">#Load the solution from route_planning</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_sol</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="si">}</span><span class="s1">.sol&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Run the trajectory planner</span>
+    <span class="n">the_plan</span><span class="p">,</span><span class="n">caps</span><span class="p">,</span><span class="n">past_plans</span> <span class="o">=</span> <span class="n">run_planner</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">the_plan</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">the_plan</span><span class="p">,</span><span class="nb">open</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.pkl&quot;</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">sim_dynamics</span><span class="p">:</span>
+        <span class="n">dynamics_plan</span> <span class="o">=</span> <span class="n">sim_dynamics</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">the_plan</span><span class="p">,</span><span class="nb">open</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;dynamics_plan.pkl&quot;</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">kml_output</span><span class="p">:</span>
+            <span class="n">gen_kml_file</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">dynamics_plan</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">txt_out</span><span class="p">:</span>
+            <span class="n">txt_file_gen</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">dynamics_plan</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">the_plan</span><span class="p">,</span><span class="nb">open</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;_the_plan.pkl&quot;</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">kml_output</span><span class="p">:</span>
+            <span class="n">gen_kml_file</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">txt_out</span><span class="p">:</span>
+            <span class="n">txt_file_gen</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+<span class="k">def</span> <span class="nf">run_cs_decomp</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs an IITCHS routine using decomposition. This preprocesses the problem</span>
+<span class="sd">    decomposing the specification into independent specifications, each with</span>
+<span class="sd">    dedicated agents.</span>
+
+<span class="sd">    Each individual problem is solved with the regular IITCHS approach and</span>
+<span class="sd">    the results are combined for a global solution, followed by low-level</span>
+<span class="sd">    trajectory planning for agents to satisfy their capability schedules.</span>
+
+<span class="sd">    Plots the agent&#39;s final low-level trajectories.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        m: The casefile module to run</span>
+<span class="sd">        args: An object returned from collaing ``parse_args()`` on an argparse</span>
+<span class="sd">              object. The attribute ``args.solver`` can be set to ``SCIP``,</span>
+<span class="sd">              ``GUROBI``, or ``GUROBI_CMD``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">CAN_DECOMPOSE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Missing dependency for decomposition. &#39;</span>
+                           <span class="s1">&#39;Check that z3 Python bindings are available&#39;</span><span class="p">)</span>
+
+    <span class="n">m</span><span class="o">.</span><span class="n">replan_req</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">Ts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">show_visuals</span><span class="p">:</span>
+        <span class="n">show_environment</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_limit</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">formula_decomp</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">decompose</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">agents</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Decomposed into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">formula_decomp</span><span class="p">)</span><span class="si">}</span><span class="s1"> subteams&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Call decomposition of spec into subteams</span>
+    <span class="n">sub_ts_list</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of modified TSs if reduce_ts is enabled, </span>
+                     <span class="c1"># otherwise just a list of the original ts</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">formula_decomp</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="c1">#Run the optimization</span>
+
+        <span class="n">subteam</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">agents</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">formula_decomp</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s1">&#39;agents&#39;</span><span class="p">]]</span>
+        <span class="n">spec</span>    <span class="o">=</span> <span class="n">formula_decomp</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s1">&#39;formula&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;subteam: &#39;</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">subteam</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;subteam length: &#39;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">subteam</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;spec: &#39;</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">spec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">reduce_ts</span><span class="p">:</span>
+            <span class="n">sub_ts</span> <span class="o">=</span> <span class="n">reduce_ts</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">subteam</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sub_ts</span> <span class="o">=</span> <span class="n">ts</span>
+        <span class="n">sub_ts_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_ts</span><span class="p">)</span>
+        <span class="n">PulpModel</span><span class="p">,</span><span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">sub_ts</span><span class="p">,</span> <span class="n">subteam</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span>
+                <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                <span class="n">replan_req</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">robust</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">robust</span><span class="p">,</span><span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">solver</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">solver_time_limit</span><span class="o">=</span><span class="n">time_limit</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">PulpModel</span><span class="o">.</span><span class="n">sol_status</span> <span class="o">==</span> <span class="n">LpSolutionInfeasible</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Decomposition resulted in an infeasible subteam:&#39;</span>
+                     <span class="s1">&#39; giving up.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># treating time limit as a global time limit, not per-subteam</span>
+            <span class="n">time_limit</span> <span class="o">-=</span> <span class="n">PulpModel</span><span class="o">.</span><span class="n">solutionTime</span>
+            <span class="k">if</span> <span class="n">time_limit</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> \
+                <span class="n">PulpModel</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">LpStatusNotSolved</span><span class="p">:</span>
+                <span class="c1"># if not solved, assume this was because of the time limit</span>
+                <span class="c1"># Note: this status is distinct from it being infeasible</span>
+                <span class="c1"># PuLP does not correctly set the solutionTime if there</span>
+                <span class="c1"># is an interrupt due to a timeout, so we cannot rely</span>
+                <span class="c1"># on updating the time_limit with solutionTime</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Stopping subteam solving (at subteam </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">): &#39;</span>
+                          <span class="s1">&#39;time limit was reached.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># loop over the k-1 solutions</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">formula_decomp</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_ts_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">sub_ts</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">formula_decomp</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">sub_ts_list</span><span class="p">):</span>
+        <span class="c1">#Load the solution from route_planning</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_sol</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">.sol&#39;</span><span class="p">)</span>
+
+        <span class="c1">#Run the trajectory planner</span>
+        <span class="n">the_plan</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">run_planner</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">sub_ts</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">the_plan</span><span class="p">,</span><span class="nb">open</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.pkl&quot;</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">sim_dynamics</span><span class="p">:</span>
+            <span class="n">dynamics_plan</span> <span class="o">=</span> <span class="n">sim_dynamics</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">the_plan</span><span class="p">,</span><span class="nb">open</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;dynamics_plan.pkl&quot;</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">kml_output</span><span class="p">:</span>
+                <span class="n">gen_kml_file</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">dynamics_plan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">txt_out</span><span class="p">:</span>
+                <span class="n">txt_file_gen</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">dynamics_plan</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">kml_output</span><span class="p">:</span>
+                <span class="n">gen_kml_file</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">txt_out</span><span class="p">:</span>
+                <span class="n">txt_file_gen</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="run_cs_run_cpp"><a class="viewcode-back" href="../main_py.html#main.run_cs_run_cpp">[docs]</a><span class="k">def</span> <span class="nf">run_cs_run_cpp</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iitchs_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs an IITCHS routine which generates capability schedules and assigns agents to capability schedules.</span>
+<span class="sd">    This function is designed to be easily called from C++.</span>
+<span class="sd">    Differences from ``run_cs_run()`` include:</span>
+
+<span class="sd">        - No low-level trajectory planning performed.</span>
+<span class="sd">        - No plots are generated.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        m: The casefile module being run.</span>
+<span class="sd">        solver (string): (Optional). The name of the solver to use. May be one of &#39;SCIP&#39;, &#39;GUROBI&#39;, or &#39;GUROBI_CMD&#39;.</span>
+<span class="sd">        iitchs_path (string): (Optional). Full path to the iitchs_base folder.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): Tuple containing:</span>
+
+<span class="sd">            - **output_strings** *(list)*: List containing each agent&#39;s schedule in string form. The iith entry of the list</span>
+<span class="sd">              contains the string for the iith agent&#39;s schedule. Format of the string </span>
+<span class="sd">              is ``STATE0-STATE1:t0-t1; STATE1-STATE2:t1-t2; ...``. If ``STATEii == STATEjj``, then the agent remains</span>
+<span class="sd">              within ``STATEii`` during  the specified time interval. If ``STATEii != STATEjj``, then the agent traverses</span>
+<span class="sd">              the edge from ``STATEii`` to ``STATEjj`` during the specified time interval.</span>
+<span class="sd">              Examples include ``q1-q1:0-10`` or ``q7-q2:50-75``.</span>
+<span class="sd">            - **PuLP_Model** *(PuLP LpProblem object)*: Object containing the PuLP MILP problem that was solved to obtain the</span>
+<span class="sd">              capability schedule.</span>
+<span class="sd">            - **replan_data** *(object)*: Python object containing the data for replanning.</span>
+<span class="sd">            - **path_args** *(object)*: Python object containing the paths to the transition system file and output save path.</span>
+<span class="sd">            - **agent_positions**: List containing the locations (states/edges) of capabilities at all timesteps. The iith</span>
+<span class="sd">                entry corresponds to a list containing position information at time ii. The list in entry ii contains position</span>
+<span class="sd">                information for all capability classes represented by the agents. **NOTE:** The order of entries in list ii</span>
+<span class="sd">                does **not** correspond to the order of agents in the casefile. To find the entry that an agent jj maps to in</span>
+<span class="sd">                the iith list, use the agent_index_dict output (described below).</span>
+<span class="sd">            - **agent_tasks**: TODO</span>
+<span class="sd">            - **agent_index_dict***: Dictionary mapping agent number to the corresponding column (i.e. second index) number in</span>
+<span class="sd">                the ``agent_positions`` list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If an absolute path to the iitchs_MOOS folder is given,</span>
+    <span class="c1"># change the relative directories in case1.py to use the</span>
+    <span class="c1"># new path. Useful when running the MOOS app in a different</span>
+    <span class="c1"># directory than the iitchs_MOOS folder.</span>
+    <span class="n">path_args</span> <span class="o">=</span> <span class="n">empty_struct</span>
+    <span class="k">if</span> <span class="n">iitchs_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">iitchs_path</span><span class="p">),</span> <span class="s2">&quot;Error: path &quot;</span> <span class="o">+</span> <span class="n">iitchs_path</span> <span class="o">+</span> <span class="s2">&quot; does not exist. Change your iitchs_path input for run_cs_run_cpp.&quot;</span>
+
+        <span class="n">catl_path</span> <span class="o">=</span> <span class="n">iitchs_path</span> <span class="o">+</span> <span class="s1">&#39;/src&#39;</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">ts_filename</span> <span class="o">=</span> <span class="n">catl_path</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="c1"># Removes the leading &#39;.&#39;</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">save_filename</span> <span class="o">=</span> <span class="n">catl_path</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">catl_path</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">output_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_args</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">),</span> <span class="s2">&quot;Error: path_args.ts_filename path &quot;</span> <span class="o">+</span> <span class="n">path_args</span><span class="o">.</span><span class="n">ts_filename</span> <span class="o">+</span> <span class="s2">&quot; does not exist.&quot;</span>
+
+        <span class="c1"># Create the output_path, if it doesn&#39;t already exist.</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">path_args</span><span class="o">.</span><span class="n">output_path</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_args</span><span class="o">.</span><span class="n">output_path</span><span class="p">),</span> <span class="s2">&quot;Error, path_args.output_path &quot;</span> <span class="o">+</span> <span class="n">path_args</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot; does not exist.&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">ts_filename</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">ts_filename</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">save_filename</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">save_filename</span>
+        <span class="n">path_args</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">output_path</span>
+
+
+    <span class="n">m</span><span class="o">.</span><span class="n">replan_req</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">Ts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path_args</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+        <span class="k">assert</span> <span class="s1">&#39;grave&#39;</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;prop&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
+
+
+    <span class="c1"># if m.show_visuals:</span>
+        <span class="c1"># show_environment(ts)</span>
+
+    <span class="c1">#Run the optimization</span>
+    <span class="n">PuLP_Model</span><span class="p">,</span><span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">agents</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">file_name</span><span class="o">=</span><span class="n">path_args</span><span class="o">.</span><span class="n">save_filename</span><span class="p">,</span> <span class="n">replan_req</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">replan_req</span><span class="p">,</span><span class="n">robust</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">robust</span><span class="p">,</span><span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span><span class="n">solver_time_limit</span><span class="o">=</span><span class="n">time_limit</span><span class="p">)</span>
+
+    <span class="c1"># Load the solution from route_planning</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_sol</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">path_args</span><span class="o">.</span><span class="n">save_filename</span><span class="si">}</span><span class="s1">.sol&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Run the trajectory planner</span>
+    <span class="n">agent_positions</span><span class="p">,</span> <span class="n">output_strings</span><span class="p">,</span> <span class="n">agent_tasks</span><span class="p">,</span> <span class="n">agent_index_dict</span> <span class="o">=</span> <span class="n">run_planner_cpp</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">ts</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">output_strings</span><span class="p">,</span> <span class="n">PuLP_Model</span><span class="p">,</span> <span class="n">replan_data</span><span class="p">,</span> <span class="n">path_args</span><span class="p">,</span> <span class="n">agent_positions</span><span class="p">,</span> <span class="n">agent_tasks</span><span class="p">,</span> <span class="n">agent_index_dict</span></div>
+
+
+
+
+<span class="k">def</span> <span class="nf">get_argparser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A convenience function for building an argparse object. This should only be used internally.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        parser (argparse object): An argparse object used when calling ``main.py``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span>
+    <span class="p">)</span>
+    <span class="n">subparsers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="s1">&#39;action&#39;</span><span class="p">)</span>
+    <span class="n">parser_run</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run an example with no replanning or extras&#39;</span><span class="p">)</span>
+    <span class="n">parser_decomp</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s1">&#39;decomp&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Ran an example with specification decomposition&#39;</span><span class="p">)</span>
+    <span class="n">parser_run_cpp</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s1">&#39;run_cpp&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run the &quot;run&quot; command using the function that MOOS C++ code calls.&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Argument to specify the MILP solver when using the &#39;run&#39; option</span>
+    <span class="n">parser_run</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;--solver&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;SCIP&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify which solver PuLP should call. Current options are &quot;SCIP&quot;, &quot;GUROBI&quot;, &quot;COIN_CMD&quot;, or &quot;PULP_CBC_CMD&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">parser_decomp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;--solver&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;SCIP&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify which solver PuLP should call. Current options are &quot;SCIP&quot;, &quot;GUROBI&quot;, &quot;COIN_CMD&quot;, or &quot;PULP_CBC_CMD&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">parser_run_cpp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;--solver&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;SCIP&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify which solver PuLP should call. Current options are &quot;SCIP&quot; or &quot;GUROBI&quot;.&#39;</span><span class="p">)</span>
+
+
+    <span class="c1"># Argument to specify solver time limit</span>
+    <span class="n">parser_run</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;--time_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify the solver time limit in seconds.&#39;</span><span class="p">)</span>
+    <span class="n">parser_decomp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;--time_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify the solver time limit in seconds.&#39;</span><span class="p">)</span>
+    <span class="n">parser_run_cpp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;--time_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify the solver time limit in seconds.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># decomp-specific options</span>
+    <span class="n">parser_decomp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--reduce-ts&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> 
+                               <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Remove unnecessary states from transition system &#39;</span>
+                                    <span class="s1">&#39;in each decomposed subspec/subteam.&#39;</span><span class="p">)</span>
+
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;module&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;module containing the case study data&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">get_argparser</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">module</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;run&#39;</span><span class="p">:</span>
+        <span class="n">run_cs_run</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;decomp&#39;</span><span class="p">:</span>
+        <span class="n">run_cs_decomp</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;run_cpp&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_limit</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">run_cs_run_cpp</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">time_limit</span><span class="o">=</span><span class="n">time_limit</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Output:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

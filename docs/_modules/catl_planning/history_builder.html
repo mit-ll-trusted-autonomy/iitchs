@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning.history_builder &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>catl_planning.history_builder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for catl_planning.history_builder</h1><div class="highlight"><pre>
+<span></span><span class="c1"># DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</span>
+
+<span class="c1"># This material is based upon work supported by the Under Secretary of Defense for </span>
+<span class="c1"># Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any </span>
+<span class="c1"># opinions, findings, conclusions or recommendations expressed in this material </span>
+<span class="c1"># are those of the author(s) and do not necessarily reflect the views of the Under </span>
+<span class="c1"># Secretary of Defense for Research and Engineering.</span>
+
+<span class="c1"># (C) 2021 Massachusetts Institute of Technology.</span>
+
+<span class="c1"># Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</span>
+
+<span class="c1"># The software/firmware is provided to you on an As-Is basis</span>
+
+<span class="c1"># Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS </span>
+<span class="c1"># Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. </span>
+<span class="c1"># Government rights in this work are defined by DFARS 252.227-7013 or DFARS </span>
+<span class="c1"># 252.227-7014 as detailed above. Use of this work other than as specifically </span>
+<span class="c1"># authorized by the U.S. Government may violate any copyrights that exist in this </span>
+<span class="c1"># work.</span>
+
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span> <span class="c1"># THIS IMPORT IS ONLY FOR TESTING PURPOSES</span>
+
+<div class="viewcode-block" id="regCapHist"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.history_builder.regCapHist">[docs]</a><span class="k">def</span> <span class="nf">regCapHist</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span><span class="n">regions</span><span class="p">,</span><span class="n">caps</span><span class="p">,</span><span class="n">agents</span><span class="p">):</span>
+	<span class="c1"># reformat history array to be indexed by region, capability, and time</span>
+	<span class="c1"># Input:</span>
+	<span class="c1"># - hist : a list of np arrays that map agents to regions</span>
+	<span class="c1"># - regions: a list of regions</span>
+	<span class="c1"># - caps: a list of capabilities</span>
+	<span class="c1"># - agents: a list of agents</span>
+	<span class="c1">#</span>
+	<span class="c1"># Output:</span>
+	<span class="c1"># - reg_cap_hist: a 3-d np array, whose indices are region, capability, and time</span>
+	<span class="c1">#		and whose values are the count of that capability in that region at that time.</span>
+	<span class="c1">#		Indices are their respective indices in the input lists.</span>
+
+	<span class="c1"># first, we need to pad the end of the history and convert it to a numpy array</span>
+	<span class="n">hist_pad</span> <span class="o">=</span> <span class="n">padHistory</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span>
+
+	<span class="c1"># initialize new history array</span>
+	<span class="n">reg_cap_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">caps</span><span class="p">),</span><span class="n">hist_pad</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+	<span class="c1"># for each agent</span>
+	<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hist_pad</span><span class="p">):</span>
+	
+		<span class="c1">#encode agent history as a 1 for in each region at each time step</span>
+		<span class="n">one_hot_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">),</span><span class="n">row</span><span class="o">.</span><span class="n">size</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+		<span class="n">one_hot_hist</span><span class="p">[</span><span class="n">row</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+
+		<span class="c1"># for each cap the agent has</span>
+		<span class="k">for</span> <span class="n">cap</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+			<span class="n">reg_cap_hist</span><span class="p">[:,</span><span class="n">caps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cap</span><span class="p">),:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">reg_cap_hist</span><span class="p">[:,</span><span class="n">caps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cap</span><span class="p">),:],</span><span class="n">one_hot_hist</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">reg_cap_hist</span></div>
+
+<div class="viewcode-block" id="padHistory"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.history_builder.padHistory">[docs]</a><span class="k">def</span> <span class="nf">padHistory</span><span class="p">(</span><span class="n">hist</span><span class="p">):</span>
+	<span class="c1"># Take in a list of history arrays</span>
+	<span class="c1"># Pad the last value so they are all of equal length</span>
+
+	<span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">hist</span><span class="p">])</span> <span class="c1"># length things need to be padded to</span>
+	<span class="n">hist_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span><span class="n">max_len</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="c1"># initialize new array</span>
+	<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hist</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="o">&lt;</span><span class="n">max_len</span><span class="p">:</span> <span class="c1"># needs to be padded</span>
+			<span class="n">pad_len</span> <span class="o">=</span> <span class="n">max_len</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+			<span class="n">pad_val</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+			<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">pad_val</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">pad_len</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)),</span><span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+			<span class="n">hist_pad</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">hist_pad</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+
+	<span class="k">return</span> <span class="n">hist_pad</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.history_builder.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+	<span class="c1">######################################</span>
+	<span class="c1">#</span>
+	<span class="c1"># HERE IS WHERE WE TEST THESE THINGS!</span>
+	<span class="c1">#</span>
+	<span class="c1">######################################</span>
+
+	<span class="c1"># seed for debugging purposes</span>
+	<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+	<span class="c1"># dummy data for testing</span>
+	<span class="n">agents</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;A1&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;A1&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;A2&#39;</span><span class="p">}),</span>  <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span><span class="s1">&#39;A2&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,{</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span><span class="s1">&#39;A2&#39;</span><span class="p">}),</span>
+				<span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span>  <span class="p">{</span><span class="s1">&#39;A1&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span>  <span class="p">{</span><span class="s1">&#39;A2&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span>  <span class="p">{</span><span class="s1">&#39;A1&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;A2&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,{</span><span class="s1">&#39;A1&#39;</span><span class="p">}),(</span><span class="s1">&#39;q7&#39;</span><span class="p">,{</span><span class="s1">&#39;A2&#39;</span><span class="p">})]</span>
+	<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;q0&#39;</span><span class="p">,</span><span class="s1">&#39;q1&#39;</span><span class="p">,</span><span class="s1">&#39;q2&#39;</span><span class="p">,</span><span class="s1">&#39;q3&#39;</span><span class="p">,</span><span class="s1">&#39;q4&#39;</span><span class="p">,</span><span class="s1">&#39;q5&#39;</span><span class="p">,</span><span class="s1">&#39;q6&#39;</span><span class="p">,</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span><span class="s1">&#39;q8&#39;</span><span class="p">,</span><span class="s1">&#39;q9&#39;</span><span class="p">,</span><span class="s1">&#39;grave&#39;</span><span class="p">]</span>
+	<span class="n">max_time</span> <span class="o">=</span> <span class="mi">100</span>
+	<span class="n">caps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span><span class="s1">&#39;A2&#39;</span><span class="p">]</span>
+
+	<span class="c1"># create individual agent histories of length between 18 and 20</span>
+	<span class="n">time_vec</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">))]</span>
+	<span class="n">hist</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">agents</span><span class="p">):</span>
+		<span class="n">hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">),</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">time_vec</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span> 
+
+	<span class="c1"># Call our function</span>
+	<span class="n">reg_cap_hist</span> <span class="o">=</span> <span class="n">regCapHist</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span><span class="n">regions</span><span class="p">,</span><span class="n">caps</span><span class="p">,</span><span class="n">agents</span><span class="p">)</span>
+
+	<span class="c1"># to make sure things look good, let&#39;s check the first entry in our resulting matrix</span>
+	<span class="nb">print</span> <span class="p">(</span><span class="n">reg_cap_hist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># region 0, capability 0</span>
+
+	<span class="n">hist_pad</span> <span class="o">=</span> <span class="n">padHistory</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span>
+
+	<span class="n">ag_0</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">agents</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;A1&#39;</span> <span class="ow">in</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="c1"># agents with capability 0</span>
+
+	<span class="n">idx_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">max_time</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ag_0</span><span class="p">:</span>
+		<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hist_pad</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+			<span class="n">idx_list</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+	<span class="nb">print</span> <span class="p">(</span><span class="n">idx_list</span><span class="p">)</span></div>
+
+	<span class="c1"># idx_list and reg_cap_hist[0][0] should match</span>
+
+<div class="viewcode-block" id="main_2"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.history_builder.main_2">[docs]</a><span class="k">def</span> <span class="nf">main_2</span><span class="p">():</span>
+
+	<span class="n">cap_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">moos_msg</span> <span class="o">=</span> <span class="s2">&quot;  AGENT_1 : q3 : 5 ; AGENT_2 : q3 : 5 &quot;</span>
+	<span class="n">replan_moos_str_2_msg</span><span class="p">(</span><span class="n">moos_msg</span><span class="p">,</span><span class="n">cap_array</span><span class="p">)</span></div>
+	
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main_2</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

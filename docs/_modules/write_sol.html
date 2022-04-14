@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>write_sol &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/index_benchmarks.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>write_sol</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for write_sol</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">PuLP SOL File Generator</span>
+
+<span class="sd">Generates .sol files when using PuLP as an optimization interface.</span>
+<span class="sd">Using Gurobi is not required.</span>
+
+<span class="sd">**Note:** .sol files are specific to the Gurobi solver. The</span>
+<span class="sd">specification can be found at: </span>
+<span class="sd">https://www.gurobi.com/documentation/9.1/refman/sol_format.html</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</span>
+
+<span class="c1"># This material is based upon work supported by the Under Secretary of Defense for </span>
+<span class="c1"># Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any </span>
+<span class="c1"># opinions, findings, conclusions or recommendations expressed in this material </span>
+<span class="c1"># are those of the author(s) and do not necessarily reflect the views of the Under </span>
+<span class="c1"># Secretary of Defense for Research and Engineering.</span>
+
+<span class="c1"># (C) 2021 Massachusetts Institute of Technology.</span>
+
+<span class="c1"># Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</span>
+
+<span class="c1"># The software/firmware is provided to you on an As-Is basis</span>
+
+<span class="c1"># Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS </span>
+<span class="c1"># Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. </span>
+<span class="c1"># Government rights in this work are defined by DFARS 252.227-7013 or DFARS </span>
+<span class="c1"># 252.227-7014 as detailed above. Use of this work other than as specifically </span>
+<span class="c1"># authorized by the U.S. Government may violate any copyrights that exist in this </span>
+<span class="c1"># work.</span>
+
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="kn">import</span> <span class="nn">pulp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+	<span class="kn">import</span> <span class="nn">pdb</span>
+
+<div class="viewcode-block" id="write_sol"><a class="viewcode-back" href="../_catl_planning/write_sol.html#write_sol.write_sol">[docs]</a><span class="k">def</span> <span class="nf">write_sol</span><span class="p">(</span><span class="n">pulp_problem</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a .sol file from a PuLP LpProblem object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pulp_problem: PuLP LpProblem object to create .sol</span>
+<span class="sd">            file from. The LpProblem object must be solved before </span>
+<span class="sd">            passing it into this function.</span>
+
+<span class="sd">        file_name (str): (Optional). Name (and path) of the output</span>
+<span class="sd">            file. By default the output file is saved to `./pulp.sol`.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+		<span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./pulp.sol&quot;</span>
+
+	<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+
+	<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# Solution for PuLP model &quot;</span> <span class="o">+</span> <span class="n">pulp_problem</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">pulp_problem</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+		<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# Objective value = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pulp_problem</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">value</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># Can also use pulp.value(prob.objective)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;No Objective Value (model.objective == None)&quot;</span><span class="p">)</span>
+
+	<span class="c1"># In PuLP, calling `.variables()` seems to produce a list of variables</span>
+	<span class="c1"># in alphabetical order. Gurobi instead prints all variables to the .sol file</span>
+	<span class="c1"># in order of variable creation.</span>
+	<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">pulp_problem</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
+		<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">value</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

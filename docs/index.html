@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IITCHS Base &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>IITCHS Base</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <img alt="_images/IITCHS_Logo.png" src="_images/IITCHS_Logo.png" />
+<div class="section" id="iitchs-base">
+<h1>IITCHS Base<a class="headerlink" href="#iitchs-base" title="Permalink to this headline"></a></h1>
+<p>IITCHS Base is a Python3 implementation of the IITCHS framework. It serves as the base package for implementing IITCHS functionality.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>IITCHs is currently under active development. Feel free to file an issue on Github if you discover any rough edges!</p>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<p>Inter- and Intra- Team Coordination From High Level Specifications (IITCHS) Code Base is a software package that allows a single human operator to deploy teams of self-coordinating, heterogeneous, autonomous robotic platforms using high-level specifications.
+There is an increasing focus on developing autonomous teams of agents that can cooperate together. This work can roughly be divided into two paradigms: Swarms and Teams. Swarms typically involve large numbers of agents performing behaviors. The swarm as a whole tends to be robust to agent attrition, however swarms typically only contain homogeneous agents and perform relatively simple behaviors or tasks. Teams on the other hand are often composed of fewer heterogeneous agents. Teams typically carry out more complex behavior, but tend to not be robust to agent failure.</p>
+<p>IITCHS Code Base combines the best attributes of both Swarms and Teams. It enables one human operator to supervise and control large heterogeneous teams performing complex behaviors and dynamic tasks, while still being robust and resilient to agent failures and attrition. IITCHS Code Base takes in high-level objectives from a human operator and then automatically decomposes these objectives into precise, low-level plans to be executed by the autonomous robots on the heterogeneous team. In making these plans it takes into account the environment the agents are working in and the differing capabilities of individual team members. The human supervisor only needs to worry about the high-level objectives of the problem at hand without needing to figure out all details of the solution.</p>
+<p>IITCHS is designed to perform well on problems that</p>
+<ul class="simple">
+<li><p>Involve agents with differing sensors or capabilities</p></li>
+<li><p>Have complex time and location constraints</p></li>
+<li><p>Require plans that will be executed on the order of hours to days</p></li>
+</ul>
+<p>IITCHs may not be the best match for problems that</p>
+<ul class="simple">
+<li><p>Require rapidly changing plans in highly uncertain environments</p></li>
+<li><p>Require solutions on the order of subseconds to seconds</p></li>
+</ul>
+</div>
+<div class="section" id="citation-information">
+<h1>Citation Information<a class="headerlink" href="#citation-information" title="Permalink to this headline"></a></h1>
+<p>Please consider citing the following papers that establish the theoretical basis for IITCHS:</p>
+<p><a class="reference external" href="https://ieeexplore.ieee.org/document/9663414">Scalable and Robust Algorithms for Task-Based Coordination From High-Level Specifications (ScRATCHeS)</a></p>
+<p>BibTeX:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">Leahy2021ScalableAR</span><span class="p">,</span>
+  <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">Scalable</span> <span class="ow">and</span> <span class="n">Robust</span> <span class="n">Algorithms</span> <span class="k">for</span> <span class="n">Task</span><span class="o">-</span><span class="n">Based</span> <span class="n">Coordination</span> <span class="n">From</span> <span class="n">High</span><span class="o">-</span><span class="n">Level</span> <span class="n">Specifications</span> <span class="p">(</span><span class="n">ScRATCHeS</span><span class="p">)},</span>
+  <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Kevin</span> <span class="n">J</span><span class="o">.</span> <span class="n">Leahy</span> <span class="ow">and</span> <span class="n">Zachary</span> <span class="n">T</span><span class="o">.</span> <span class="n">Serlin</span> <span class="ow">and</span> <span class="n">Cristian</span> <span class="n">Ioan</span> <span class="n">Vasile</span> <span class="ow">and</span> <span class="n">Andrew</span> <span class="n">Schoer</span> <span class="ow">and</span> <span class="n">Austin</span> <span class="n">Jones</span> <span class="ow">and</span> <span class="n">Roberto</span> <span class="n">Tron</span> <span class="ow">and</span> <span class="n">Calin</span> <span class="n">A</span><span class="o">.</span> <span class="n">Belta</span><span class="p">},</span>
+  <span class="n">journal</span><span class="o">=</span><span class="p">{</span><span class="n">IEEE</span> <span class="n">Transactions</span> <span class="n">on</span> <span class="n">Robotics</span><span class="p">},</span>
+  <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2021</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="license">
+<h1>License<a class="headerlink" href="#license" title="Permalink to this headline"></a></h1>
+<p>BSD-3-Clause</p>
+<p>Copyright 2021 Massachusetts Institute of Technology.</p>
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+<ol class="arabic simple" start="2">
+<li><p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p></li>
+<li><p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p></li>
+<li><p>Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</p></li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+</div>
+<div class="section" id="distribution-and-disclaimer-statements">
+<h1>Distribution and Disclaimer Statements<a class="headerlink" href="#distribution-and-disclaimer-statements" title="Permalink to this headline"></a></h1>
+<p>DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</p>
+<p>This material is based upon work supported by the Under Secretary of Defense for
+Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any
+opinions, findings, conclusions or recommendations expressed in this material
+are those of the author(s) and do not necessarily reflect the views of the Under
+Secretary of Defense for Research and Engineering.</p>
+<ol class="upperalpha simple" start="3">
+<li><p>2021 Massachusetts Institute of Technology.</p></li>
+</ol>
+<p>Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</p>
+<p>The software/firmware is provided to you on an As-Is basis</p>
+<p>Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S.
+Government rights in this work are defined by DFARS 252.227-7013 or DFARS
+252.227-7014 as detailed above. Use of this work other than as specifically
+authorized by the U.S. Government may violate any copyrights that exist in this
+work.</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

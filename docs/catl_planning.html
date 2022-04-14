@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning package &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="main.py" href="main_py.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="main_py.html">main.py</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Catl Planning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.history_builder">catl_planning.history_builder module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.kml_gen">catl_planning.kml_gen module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.pure_pursuit">catl_planning.pure_pursuit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.route_planning">catl_planning.route_planning module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.rrt_planning">catl_planning.rrt_planning module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.traj_planner">catl_planning.traj_planner module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.visualization">catl_planning.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning.write_sol">catl_planning.write_sol module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-catl_planning">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="source_code_index.html">IITCHS Source Code</a> &raquo;</li>
+      <li>catl_planning package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/catl_planning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="catl-planning-package">
+<h1>catl_planning package<a class="headerlink" href="#catl-planning-package" title="Permalink to this headline"></a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</div>
+<div class="section" id="module-catl_planning.history_builder">
+<span id="catl-planning-history-builder-module"></span><h2>catl_planning.history_builder module<a class="headerlink" href="#module-catl_planning.history_builder" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.history_builder.main">
+<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/history_builder.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.history_builder.main" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.history_builder.main_2">
+<span class="sig-name descname"><span class="pre">main_2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/history_builder.html#main_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.history_builder.main_2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.history_builder.padHistory">
+<span class="sig-name descname"><span class="pre">padHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/history_builder.html#padHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.history_builder.padHistory" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.history_builder.regCapHist">
+<span class="sig-name descname"><span class="pre">regCapHist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/history_builder.html#regCapHist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.history_builder.regCapHist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.kml_gen">
+<span id="catl-planning-kml-gen-module"></span><h2>catl_planning.kml_gen module<a class="headerlink" href="#module-catl_planning.kml_gen" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.kml_gen.gen_kml_file">
+<span class="sig-name descname"><span class="pre">gen_kml_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plan_to_draw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/kml_gen.html#gen_kml_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.kml_gen.gen_kml_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.kml_gen.point_transform">
+<span class="sig-name descname"><span class="pre">point_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_to_m_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_to_m_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aprox_m_per_deg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">111134.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/kml_gen.html#point_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.kml_gen.point_transform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.kml_gen.txt_output">
+<span class="sig-name descname"><span class="pre">txt_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_plan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/kml_gen.html#txt_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.kml_gen.txt_output" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.pure_pursuit">
+<span id="catl-planning-pure-pursuit-module"></span><h2>catl_planning.pure_pursuit module<a class="headerlink" href="#module-catl_planning.pure_pursuit" title="Permalink to this headline"></a></h2>
+<p>Path tracking simulation with pure pursuit steering control and PID speed control.</p>
+<p>author: Atsushi Sakai (&#64;Atsushi_twi)
+Modified: Zachary Serlin</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.PIDControl">
+<span class="sig-name descname"><span class="pre">PIDControl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#PIDControl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.PIDControl" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.State">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.State" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.calc_distance">
+<span class="sig-name descname"><span class="pre">calc_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#calc_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.calc_distance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.calc_target_index_time">
+<span class="sig-name descname"><span class="pre">calc_target_index_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#calc_target_index_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.calc_target_index_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.plot_arrow">
+<span class="sig-name descname"><span class="pre">plot_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#plot_arrow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.plot_arrow" title="Permalink to this definition"></a></dt>
+<dd><p>Plot arrow</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.pure_pursuit_control">
+<span class="sig-name descname"><span class="pre">pure_pursuit_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pind</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#pure_pursuit_control"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.pure_pursuit_control" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.sim_dynamics">
+<span class="sig-name descname"><span class="pre">sim_dynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_plan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#sim_dynamics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.sim_dynamics" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.pure_pursuit.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/pure_pursuit.html#update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.pure_pursuit.update" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.route_planning">
+<span id="catl-planning-route-planning-module"></span><h2>catl_planning.route_planning module<a class="headerlink" href="#module-catl_planning.route_planning" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.add_proposition_constraints_pulp">
+<span class="sig-name descname"><span class="pre">add_proposition_constraints_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stl_milp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Integer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#add_proposition_constraints_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.add_proposition_constraints_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the proposition constraints. First, the proposition-state variables
+are defined such that capabilities are not double booked. Second, contraints
+are added such that proposition are satisfied as best as possible. The
+variables in the MILP encoding of the STL formula are used for the encoding
+as the minimizers of over proposition-state variables.</p>
+<p>This function uses the PuLP modeling language rather than Gurobi directly.</p>
+<ul class="simple">
+<li><p>The PuLP model variable.</p></li>
+<li><p>The MILP encoding of the STL formula obtained from the CaTL specification.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The AST of the CaTL specification formula.</p></li>
+<li><p>Dictionary of capability encoding that maps capabilities to binary words</p></li>
+</ul>
+<p>represented as integers.
+- The agent classes given as a dictionary from frozen sets of capabilities
+to bitmaps (integers).
+- Time bound.
+- Variable type (default: integer).’F[0, 10] T(2, orange, {(UV, 1), (Mo, 1)})’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.add_system_constraints_pulp">
+<span class="sig-name descname"><span class="pre">add_system_constraints_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capability_distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#add_system_constraints_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.add_system_constraints_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the constraints that capture the system dynamics.</p>
+<ul class="simple">
+<li><p>The PuLP model object.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The agent classes given as a dictionary from frozen sets of capabilities</p></li>
+</ul>
+<p>to bitmaps (integers).
+- The initial distribution of capabilities at each state.
+- Time bound.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The initial time constraints</p>
+<blockquote>
+<div><p>z_{state}_g_0 = eta_{state}_g</p>
+</div></blockquote>
+<p>is equivalent to</p>
+<blockquote>
+<div><p>sum_{e=(u, v) in T} z_e_g_W(e) = eta_{state}_g</p>
+</div></blockquote>
+<p>because of the definition of the team state at TS states,
+where eta_{state}_g is the number of agents of class g at state {state} at
+time 0.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.computeRobustnessUpperBound">
+<span class="sig-name descname"><span class="pre">computeRobustnessUpperBound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#computeRobustnessUpperBound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.computeRobustnessUpperBound" title="Permalink to this definition"></a></dt>
+<dd><p>Computes a loose upper bound on the robustness value.</p>
+<p>The robustness value measures whether there are enough agents to satisfy the
+temporal logic specification in the given transition system. A positive
+robustness value indicates there are more than enough required agents to
+satisfy the formula. A negative robustness value indicates that there
+are not enough required agents to satisfy the formula.</p>
+<p>This function computes an upper bound on the robustness value for a given
+transition system (TS), set of agents, and CaTL formula. This upper bound can
+be used as a “sanity check” to test if the formula is infeasible for the
+given TS and set of agents. If the upper bound is negative, then the
+problem is infeasible. If the upper bound is positive, then it is <em>possible</em>
+that the problem is feasible.</p>
+<p>If the upper bound is negative, there is no point in solving the associated
+MILP. The problem is infeasible.</p>
+<p><strong>Note:</strong> This function does <em>not</em> take into account the travel time between
+regions in the TS.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – The transition system</p></li>
+<li><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of agents in the system. Each agent has the form <code class="docutils literal notranslate"><span class="pre">(initial_state,</span> <span class="pre">{capability1,</span> <span class="pre">capability2,...})</span></code>.</p></li>
+<li><p><strong>formula</strong> – Either a string or a catl.CATLFormula object containing the formula.
+If a string, it is converted into a catl.CATLFormula object by
+calling <code class="docutils literal notranslate"><span class="pre">formula</span> <span class="pre">=</span> <span class="pre">CATLFormula.from_formula(formula)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Upper bound on the robustness value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.compute_agent_classes">
+<span class="sig-name descname"><span class="pre">compute_agent_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#compute_agent_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.compute_agent_classes" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the set of agent types w.r.t. capabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of agents, where agents are tuples (q, cap), q is the initial state of
+the agent, and cap is the set of capabilities. Agents’ identifiers are their
+indices in the list.</p></li>
+<li><p><strong>capabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Dictionary of capability class encoding that maps capability classes to binary words
+represented as integers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary of agent capability classes that maps frozen (immutable) sets of
+capabilities to the binary words encoding the corresponding capability classes.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.compute_capability_bitmap">
+<span class="sig-name descname"><span class="pre">compute_capability_bitmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#compute_capability_bitmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.compute_capability_bitmap" title="Permalink to this definition"></a></dt>
+<dd><p>Computes a bitmap encoding of agents’ capabilities. Each capability is
+associated with a bit in a binary word of length equal to the number of capabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List containing agent information. The iith entry is a tuple (q, cap)
+corresponding to the iith agent, where q is the initial state of
+the agent and cap is the set of all capabilities that agent has.</p>
+<p>An example of a valid agents list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agents</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;q1&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;VIS&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q3&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;LID&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;q7&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;LID&#39;</span><span class="p">,</span><span class="s1">&#39;IR&#39;</span><span class="p">})]</span>
+</pre></div>
+</div>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary mapping capabilities to integers representing the
+binary words for the capabilities.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.compute_initial_capability_distribution">
+<span class="sig-name descname"><span class="pre">compute_initial_capability_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#compute_initial_capability_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.compute_initial_capability_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the initial number of agents of each class at each state.
+Input
+—–
+- The transition system specifying the environment.
+- List of agents, where agents are tuples (q, cap), q is the initial state of
+the agent, and cap is the set of capabilities. Agents’ identifiers are their
+indices in the list.
+- Dictionary of capability encoding that maps capabilities to binary words
+represented as integers.
+Output
+——
+Dictionary from states to distribution of agents from each class. The
+distribution is a list of length equal to the number of capabilities, and
+each element is the number of agents of having those capabilities (a class).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.constrain_grave_state_pulp">
+<span class="sig-name descname"><span class="pre">constrain_grave_state_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grave_region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#constrain_grave_state_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.constrain_grave_state_pulp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.create_system_variables_pulp">
+<span class="sig-name descname"><span class="pre">create_system_variables_pulp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpulp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Integer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#create_system_variables_pulp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.create_system_variables_pulp" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the state and transition variables associated with the given
+transition system using the PuLP framework.</p>
+<p>The state variables are z_{state}_{cap}_k, where {state} is a node in the TS
+graph, {cap} is a capability class encoded as an integer, and k is the time
+step.</p>
+<p>The transition variables are z_{state1}_{state2}_{cap}_k, where {state1} and
+{state2} define the transition, {cap} is a capability class encoded as an
+integer, and k is the time step.</p>
+<ul class="simple">
+<li><p>The PuLP model object.</p></li>
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The agent classes given as a dictionary from frozen sets of capabilities</p></li>
+</ul>
+<p>to bitmaps (integers).
+- Time bound.
+- Variable type (default: integer).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Data structure holding the variables is a list of list of variables, e.g.,</p>
+<blockquote>
+<div><p>d[‘vars’][k][g] is the z_{q/e}_bitmap(g)_k</p>
+</div></blockquote>
+<p>where d is the dictionary of attributes for a node q or an edge e in the TS,
+g is an agent class (frozen set of capabilities), bitmap(g) is the binary
+encoding of g as an integer, and k is the time step.
+Also, d[‘vars’] is a list of length <a href="#id1"><span class="problematic" id="id2">`</span></a>bound+1’, d[‘vars’][k] is a dictionary
+from frozen sets to gurobi variables.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.extract_propositions">
+<span class="sig-name descname"><span class="pre">extract_propositions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ast</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#extract_propositions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.extract_propositions" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the set of propositions in the formula, and checks that it is
+included in the transitions system.</p>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>The AST of the CaTL specification formula.</p></li>
+</ul>
+<p>Set of propositions in the specification formula.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.generate_MILP_problems">
+<span class="sig-name descname"><span class="pre">generate_MILP_problems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upperBound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_grave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#generate_MILP_problems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.generate_MILP_problems" title="Permalink to this definition"></a></dt>
+<dd><p>Similar to route_planning(), but simply generates the MILP .lp / .mps problem files
+without actually solving them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – </p></li>
+<li><p><strong>ts</strong> – </p></li>
+<li><p><strong>agents</strong> – </p></li>
+<li><p><strong>formula</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>bound</strong> – </p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>replan_req</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>robust</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>regularize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>upperBound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>load_previous</strong> – </p></li>
+<li><p><strong>solver_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>compute_IIS</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>verbose</strong> – </p></li>
+<li><p><strong>compress_files</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>solver_time_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Time limit on the MILP solution process. The MILP will stop after
+this amount of time. If no time limit is specified, the MILP will
+run to completion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Tuple containing the following elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>mpulp</strong>: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</p></li>
+<li><dl class="simple">
+<dt><strong>replan_data</strong>: Object containing the following fields:</dt><dd><ul>
+<li><p>TODO: [INSERT HERE]</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a>)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>List of agents, where agents are tuples (q, cap), q is the initial state</p></li>
+</ul>
+<p>of the agent, and cap is the set of capabilities. Agents’ identifiers are
+their indices in the list.
+- The CaTL specification formula.
+- The time bound used in the encoding (default: computed from CaTL formula).</p>
+<p>TODO: TBD</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.get_ub">
+<span class="sig-name descname"><span class="pre">get_ub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capDict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#get_ub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.get_ub" title="Permalink to this definition"></a></dt>
+<dd><p>Uses recursive relationships to compute the excess capacity of the formula with respect to the team</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.route_planning">
+<span class="sig-name descname"><span class="pre">route_planning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_req</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upperBound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_previous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_IIS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_time_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#route_planning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.route_planning" title="Permalink to this definition"></a></dt>
+<dd><p>Performs route planning for agents <code class="docutils literal notranslate"><span class="pre">agents</span></code> moving in a transition system
+<code class="docutils literal notranslate"><span class="pre">ts</span></code> such that the CaTL specification <code class="docutils literal notranslate"><span class="pre">formula</span></code> is satisfied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – </p></li>
+<li><p><strong>ts</strong> – </p></li>
+<li><p><strong>agents</strong> – </p></li>
+<li><p><strong>formula</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>bound</strong> – </p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>replan_req</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>robust</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>regularize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>upperBound</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>load_previous</strong> – </p></li>
+<li><p><strong>solver_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>compute_IIS</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>verbose</strong> – </p></li>
+<li><p><strong>compress_files</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>solver_time_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Time limit on the MILP solution process. The MILP will stop after
+this amount of time. If no time limit is specified, the MILP will
+run to completion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Tuple containing the following elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>mpulp</strong>: PuLP LpProblem object containing the (solved) MILP corresponding to the planning problem</p></li>
+<li><dl class="simple">
+<dt><strong>replan_data</strong>: Object containing the following fields:</dt><dd><ul>
+<li><p>TODO: [INSERT HERE]</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a>)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>The transition system specifying the environment.</p></li>
+<li><p>List of agents, where agents are tuples (q, cap), q is the initial state</p></li>
+</ul>
+<p>of the agent, and cap is the set of capabilities. Agents’ identifiers are
+their indices in the list.
+- The CaTL specification formula.
+- The time bound used in the encoding (default: computed from CaTL formula).</p>
+<p>TODO: TBD</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.route_planning.suppress_output">
+<span class="sig-name descname"><span class="pre">suppress_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/route_planning.html#suppress_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.route_planning.suppress_output" title="Permalink to this definition"></a></dt>
+<dd><p>Prevents a function from printing output to terminal.</p>
+<p>Redirects the output to /dev/null. Used to suppress the output of the optimization
+solvers.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.rrt_planning">
+<span id="catl-planning-rrt-planning-module"></span><h2>catl_planning.rrt_planning module<a class="headerlink" href="#module-catl_planning.rrt_planning" title="Permalink to this headline"></a></h2>
+<p>Path Planning Sample Code with Randamized Rapidly-Exploring Random Trees (RRT)</p>
+<p>Author: Zachary Serlin (<a class="reference external" href="mailto:zserlin&#37;&#52;&#48;bu&#46;edu">zserlin<span>&#64;</span>bu<span>&#46;</span>edu</a>)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.DrawGraph">
+<span class="sig-name descname"><span class="pre">DrawGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacleList</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#DrawGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.DrawGraph" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.GetPathLength">
+<span class="sig-name descname"><span class="pre">GetPathLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#GetPathLength"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.GetPathLength" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.GetTargetPoint">
+<span class="sig-name descname"><span class="pre">GetTargetPoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targetL</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#GetTargetPoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.GetTargetPoint" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.LineCollisionCheck">
+<span class="sig-name descname"><span class="pre">LineCollisionCheck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacleList</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#LineCollisionCheck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.LineCollisionCheck" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.Node">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.Node" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>RRT Node</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.PathSmoothing">
+<span class="sig-name descname"><span class="pre">PathSmoothing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacleList</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#PathSmoothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.PathSmoothing" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.PlotCircle">
+<span class="sig-name descname"><span class="pre">PlotCircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#PlotCircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.PlotCircle" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">RRT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacleList</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randArea</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expandDis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goalSampleRate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agentnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escape_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_bounds_obstacleList</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Class for RRT Planning</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT.DrawGraph">
+<span class="sig-name descname"><span class="pre">DrawGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT.DrawGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT.DrawGraph" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT.GetNearestListIndex">
+<span class="sig-name descname"><span class="pre">GetNearestListIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeList</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT.GetNearestListIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT.GetNearestListIndex" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT.Planning">
+<span class="sig-name descname"><span class="pre">Planning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">safe_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT.Planning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT.Planning" title="Permalink to this definition"></a></dt>
+<dd><p>Pathplanning
+animation: flag for animation on or off</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT.PlotCircle">
+<span class="sig-name descname"><span class="pre">PlotCircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT.PlotCircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT.PlotCircle" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.RRT_Get_Path">
+<span class="sig-name descname"><span class="pre">RRT_Get_Path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regions_to_avoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agentnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expandDis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">100,</span> <span class="pre">0,</span> <span class="pre">100]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rrt_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_bounds_obs_regions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#RRT_Get_Path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.RRT_Get_Path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.rrt_planning.obstacle_collision_check">
+<span class="sig-name descname"><span class="pre">obstacle_collision_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacleList</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/rrt_planning.html#obstacle_collision_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.rrt_planning.obstacle_collision_check" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.traj_planner">
+<span id="catl-planning-traj-planner-module"></span><h2>catl_planning.traj_planner module<a class="headerlink" href="#module-catl_planning.traj_planner" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.agent_positions_to_MOOS_strings">
+<span class="sig-name descname"><span class="pre">agent_positions_to_MOOS_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_index_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#agent_positions_to_MOOS_strings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.agent_positions_to_MOOS_strings" title="Permalink to this definition"></a></dt>
+<dd><p>Parses agent positions and tasks into string form to send to MOOS.</p>
+<p>The final format of the output strings is “state1-state1:start_time-end_time:task1; state1-state2:start_time:end_time:None; …”</p>
+<p>The task “None” specifies that the agent does not have a task. Note that all agents have the task “None” when
+traversing edges between states.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_positions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – A list of lists containing the positions of each agent at each time step. The first
+index corresponds to time step, and the second index corresponds to agent number. For example,
+<code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is the position of the jjth agent at time step ii. If agent jj is in a state
+at time ii, then <code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is an integer corresponding to the state (e.g. 7 for state
+Q7). If agent jj is traversing an edge between states at time ii, then <code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is
+a list with entries <code class="docutils literal notranslate"><span class="pre">[state1,</span> <span class="pre">state2,</span> <span class="pre">time_duration]</span></code> meaning it has <code class="docutils literal notranslate"><span class="pre">time_duration</span></code> steps to transfer
+from <code class="docutils literal notranslate"><span class="pre">state1</span></code> to <code class="docutils literal notranslate"><span class="pre">state2</span></code>.</p></li>
+<li><p><strong>num_agents</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of agents in the network. TODO: This is redundant; we can compute this from
+agent_positions itself.</p></li>
+<li><p><strong>agent_index_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – A dictionary mapping agent number to column index (second dimension index) in
+agent_positions. The ordering of agent numbers does <strong>not</strong> correspond to the column order; i.e.
+the iith agent does not correspond to the iith column in <code class="docutils literal notranslate"><span class="pre">agent_positions</span></code>. Instead, it corresponds
+to the <code class="docutils literal notranslate"><span class="pre">agent_index_dict[ii]</span></code> index in <code class="docutils literal notranslate"><span class="pre">agent_positions</span></code>.</p></li>
+<li><p><strong>agent_tasks</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – A list of lists similar to agent_positions, but containing the task that each agent
+is doing at each time step. <strong>Work in progress; final format TBA.</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of strings with the format specified previously.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.assign_caps_to_trajs">
+<span class="sig-name descname"><span class="pre">assign_caps_to_trajs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grave_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replan_agent_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replanning_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#assign_caps_to_trajs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.assign_caps_to_trajs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.collision_check">
+<span class="sig-name descname"><span class="pre">collision_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#collision_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.collision_check" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.create_random_tasks">
+<span class="sig-name descname"><span class="pre">create_random_tasks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_index_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#create_random_tasks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.create_random_tasks" title="Permalink to this definition"></a></dt>
+<dd><p>Creates random tasks for agents. Placeholder function.</p>
+<p>Task string options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>NULL</p></li>
+<li><p>LOITER</p></li>
+<li><p>RASTER</p></li>
+<li><p>DEFENSE</p></li>
+<li><p>ESCORT</p></li>
+<li><p>KILLCHAIN</p></li>
+<li><p>BLOCKADE</p></li>
+</ul>
+</div></blockquote>
+<p>All agents have have the task “NONE” when they are traversing an edge</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_positions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – A list of lists containing the positions of each agent at each time step. The first
+index corresponds to time step, and the second index corresponds to agent number. For example,
+<code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is the position of the jjth agent at time step ii. If agent jj is in a state
+at time ii, then <code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is an integer corresponding to the state (e.g. 7 for state
+Q7). If agent jj is traversing an edge between states at time ii, then <code class="docutils literal notranslate"><span class="pre">agent_positions[ii][jj]</span></code> is
+a list with entries <code class="docutils literal notranslate"><span class="pre">[state1,</span> <span class="pre">state2,</span> <span class="pre">time_duration]</span></code> meaning it has <code class="docutils literal notranslate"><span class="pre">time_duration</span></code> steps to transfer
+from <code class="docutils literal notranslate"><span class="pre">state1</span></code> to <code class="docutils literal notranslate"><span class="pre">state2</span></code>.</p></li>
+<li><p><strong>agent_index_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – A dictionary mapping agent number to column index in the <code class="docutils literal notranslate"><span class="pre">agent_positions</span> <span class="pre">matrix</span></code>. The
+column in <code class="docutils literal notranslate"><span class="pre">agent_positions</span></code> corresponding to agent ii is given by <code class="docutils literal notranslate"><span class="pre">agent_index_dict[ii]</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of lists agent_tasks. The first dimension indexes time step,
+the second dimension indexes agent number. For example,
+agent_tasks[ii][jj] contains the task string for the jjth agent at time step ii
+(e.g. “BLOCKADE”).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.define_region_bounds">
+<span class="sig-name descname"><span class="pre">define_region_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#define_region_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.define_region_bounds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.expand_agent_positions">
+<span class="sig-name descname"><span class="pre">expand_agent_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#expand_agent_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.expand_agent_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Edits agent_positions in-place to reinsert removed states and edges.
+This is meant for use with reduce_ts in decomposition_functions.py, which
+removes unnecessary states and combines the edge weights.</p>
+<p>This function takes agent paths described by agent positions and replaces
+edges with the expanded path by reinserting removed states and edges.</p>
+<p class="rubric">Example</p>
+<p>q0 -weight:2-&gt; q1 -weight:4-&gt; q2</p>
+<p>q1 was removed by reduce_ts</p>
+<p>solution has q0-weight:6-&gt;q2</p>
+<p>this function edits the solution to go through q1 again</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> – the reduced TS</p></li>
+<li><p><strong>agent_positions</strong> – a numpy array where each row is a time and each column is an agent
+elements can be a state or an edge</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.get_agent_capabilities">
+<span class="sig-name descname"><span class="pre">get_agent_capabilities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#get_agent_capabilities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.get_agent_capabilities" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of agent capabilities.</p>
+<p>The order of capabilities in the list corresponds to the columns in
+agent_positions, but does <strong>not</strong> correspond to the agent order in the
+casefile agent list.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.get_agent_map">
+<span class="sig-name descname"><span class="pre">get_agent_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_caps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#get_agent_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.get_agent_map" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.randint">
+<span class="sig-name descname"><span class="pre">randint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#catl_planning.traj_planner.randint" title="Permalink to this definition"></a></dt>
+<dd><p>Return random integers from <cite>low</cite> (inclusive) to <cite>high</cite> (exclusive).</p>
+<p>Return random integers from the “discrete uniform” distribution of
+the specified dtype in the “half-open” interval [<cite>low</cite>, <cite>high</cite>). If
+<cite>high</cite> is None (the default), then results are from [0, <cite>low</cite>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>New code should use the <code class="docutils literal notranslate"><span class="pre">integers</span></code> method of a <code class="docutils literal notranslate"><span class="pre">default_rng()</span></code>
+instance instead; please see the <span class="xref std std-ref">random-quick-start</span>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>low</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>array-like of ints</em>) – Lowest (signed) integers to be drawn from the distribution (unless
+<code class="docutils literal notranslate"><span class="pre">high=None</span></code>, in which case this parameter is one above the
+<em>highest</em> such integer).</p></li>
+<li><p><strong>high</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>array-like of ints</em><em>, </em><em>optional</em>) – If provided, one above the largest (signed) integer to be drawn
+from the distribution (see above for behavior if <code class="docutils literal notranslate"><span class="pre">high=None</span></code>).
+If array-like, must contain integer values</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>tuple of ints</em><em>, </em><em>optional</em>) – Output shape.  If the given shape is, e.g., <code class="docutils literal notranslate"><span class="pre">(m,</span> <span class="pre">n,</span> <span class="pre">k)</span></code>, then
+<code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">*</span> <span class="pre">n</span> <span class="pre">*</span> <span class="pre">k</span></code> samples are drawn.  Default is None, in which case a
+single value is returned.</p></li>
+<li><p><strong>dtype</strong> (<em>dtype</em><em>, </em><em>optional</em>) – <p>Desired dtype of the result. Byteorder must be native.
+The default value is int.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.11.0.</span></p>
+</div>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>out</strong> – <cite>size</cite>-shaped array of random integers from the appropriate
+distribution, or a single such random int if <cite>size</cite> not provided.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a> or ndarray of ints</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_integers</span></code></dt><dd><p>similar to <cite>randint</cite>, only for the closed interval [<cite>low</cite>, <cite>high</cite>], and 1 is the lowest value if <cite>high</cite> is omitted.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">Generator.integers</span></code></dt><dd><p>which should be used for new code.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0]) # random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])</span>
+</pre></div>
+</div>
+<p>Generate a 2 x 4 array of ints between 0 and 4, inclusive:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="go">array([[4, 0, 2, 1], # random</span>
+<span class="go">       [3, 2, 2, 0]])</span>
+</pre></div>
+</div>
+<p>Generate a 1 x 3 array with 3 different upper bounds</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="go">array([2, 2, 9]) # random</span>
+</pre></div>
+</div>
+<p>Generate a 1 by 3 array with 3 different lower bounds</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">array([9, 8, 7]) # random</span>
+</pre></div>
+</div>
+<p>Generate a 2 by 4 array using broadcasting with dtype of uint8</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[[</span><span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="go">array([[ 8,  6,  9,  7], # random</span>
+<span class="go">       [ 1, 16,  9, 12]], dtype=uint8)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.random_point_in_region">
+<span class="sig-name descname"><span class="pre">random_point_in_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_obstacles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">over_inc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_region_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#random_point_in_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.random_point_in_region" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.read_sol_data">
+<span class="sig-name descname"><span class="pre">read_sol_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#read_sol_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.read_sol_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.run_planner">
+<span class="sig-name descname"><span class="pre">run_planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_past_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_sol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#run_planner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.run_planner" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.run_planner_cpp">
+<span class="sig-name descname"><span class="pre">run_planner_cpp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#run_planner_cpp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.run_planner_cpp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.single_region_bounds_for_rrt">
+<span class="sig-name descname"><span class="pre">single_region_bounds_for_rrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlaps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#single_region_bounds_for_rrt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.single_region_bounds_for_rrt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.single_region_box_bounds_for_rrt">
+<span class="sig-name descname"><span class="pre">single_region_box_bounds_for_rrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlaps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#single_region_box_bounds_for_rrt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.single_region_box_bounds_for_rrt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.split_bounds_for_rrt">
+<span class="sig-name descname"><span class="pre">split_bounds_for_rrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlaps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#split_bounds_for_rrt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.split_bounds_for_rrt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.split_box_bounds_for_rrt">
+<span class="sig-name descname"><span class="pre">split_box_bounds_for_rrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlaps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#split_box_bounds_for_rrt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.split_box_bounds_for_rrt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.traj_planner.which_agent_down">
+<span class="sig-name descname"><span class="pre">which_agent_down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">the_plan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_caps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_max</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/traj_planner.html#which_agent_down"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.traj_planner.which_agent_down" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.visualization">
+<span id="catl-planning-visualization-module"></span><h2>catl_planning.visualization module<a class="headerlink" href="#module-catl_planning.visualization" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.drawGraph">
+<span class="sig-name descname"><span class="pre">drawGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#drawGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.drawGraph" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the given graph in the viewport.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.drawPoint">
+<span class="sig-name descname"><span class="pre">drawPoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#drawPoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.drawPoint" title="Permalink to this definition"></a></dt>
+<dd><p>Draws a point in the planar environment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.drawPolicy">
+<span class="sig-name descname"><span class="pre">drawPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#drawPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.drawPolicy" title="Permalink to this definition"></a></dt>
+<dd><p>Draws the solution path with a fading effect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.drawRegion">
+<span class="sig-name descname"><span class="pre">drawRegion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">textStyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#drawRegion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.drawRegion" title="Permalink to this definition"></a></dt>
+<dd><p>Draws a polygonal region in a planar environment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.show_environment">
+<span class="sig-name descname"><span class="pre">show_environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#show_environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.show_environment" title="Permalink to this definition"></a></dt>
+<dd><p>Draws the environment and optionally save it to a file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.show_environment_agents">
+<span class="sig-name descname"><span class="pre">show_environment_agents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#show_environment_agents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.show_environment_agents" title="Permalink to this definition"></a></dt>
+<dd><p>Draws agents in the environment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.show_transition_agents">
+<span class="sig-name descname"><span class="pre">show_transition_agents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#show_transition_agents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.show_transition_agents" title="Permalink to this definition"></a></dt>
+<dd><p>Draws edges in the environment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.visualization.show_world">
+<span class="sig-name descname"><span class="pre">show_world</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/visualization.html#show_world"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.visualization.show_world" title="Permalink to this definition"></a></dt>
+<dd><p>Draws a polygonal regions in a planar environment with labels.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning.write_sol">
+<span id="catl-planning-write-sol-module"></span><h2>catl_planning.write_sol module<a class="headerlink" href="#module-catl_planning.write_sol" title="Permalink to this headline"></a></h2>
+<p>PuLP SOL File Generator</p>
+<p>Generates .sol files when using PuLP as an optimization interface.
+Using Gurobi is not required.</p>
+<p><strong>Note:</strong> .sol files are specific to the Gurobi solver. The
+specification can be found at:
+<a class="reference external" href="https://www.gurobi.com/documentation/9.1/refman/sol_format.html">https://www.gurobi.com/documentation/9.1/refman/sol_format.html</a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="catl_planning.write_sol.write_sol">
+<span class="sig-name descname"><span class="pre">write_sol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulp_problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catl_planning/write_sol.html#write_sol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#catl_planning.write_sol.write_sol" title="Permalink to this definition"></a></dt>
+<dd><p>Generates a .sol file from a PuLP LpProblem object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pulp_problem</strong> – PuLP LpProblem object to create .sol
+file from. The LpProblem object must be solved before
+passing it into this function.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – (Optional). Name (and path) of the output
+file. By default the output file is saved to <cite>./pulp.sol</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-catl_planning">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-catl_planning" title="Permalink to this headline"></a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="main_py.html" class="btn btn-neutral float-left" title="main.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

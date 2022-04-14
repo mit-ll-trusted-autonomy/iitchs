@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>benchmark_tools &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/index_benchmarks.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>benchmark_tools</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for benchmark_tools</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Module containing tools for benchmarking IITCHS MILP problem performance.</span>
+
+<span class="sd">The module contains the following classes:</span>
+
+<span class="sd">    * BenchmarkOptionsGenerator: Class for storing configurations options</span>
+<span class="sd">        for benchmarking.</span>
+<span class="sd">    * named_tuple_iterator: Similar to itertools.product, but returns an</span>
+<span class="sd">        iterator that yields named tuples. Also maintains an internal</span>
+<span class="sd">        count of how many items it has left.</span>
+<span class="sd">    * sized_product_iter: Similar to itertools.product, but maintains an</span>
+<span class="sd">        internal count of how many items it has left.</span>
+
+<span class="sd">Author: James Usevitch</span>
+<span class="sd">Created: Aug 2021</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pulp</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span><span class="p">,</span> <span class="n">starmap</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
+<span class="kn">from</span> <span class="nn">catl</span> <span class="kn">import</span> <span class="n">CATLFormula</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">gcd</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">generation_tools</span> <span class="kn">import</span> <span class="n">class_to_capability_dict</span><span class="p">,</span> <span class="n">generate_agents_by_class</span><span class="p">,</span> <span class="n">generate_agents_by_total_and_distribution</span><span class="p">,</span> <span class="n">generate_random_CaTL_formula_and_info</span><span class="p">,</span> <span class="n">generateRandomGridTS</span>
+<span class="c1"># from RandomizedCaTLExperiments import generateRandomGridTS_seed, generateRandomAgents_seed</span>
+<span class="kn">from</span> <span class="nn">catl_planning.route_planning</span> <span class="kn">import</span> <span class="n">route_planning</span><span class="p">,</span> <span class="n">generate_MILP_problems</span><span class="p">,</span> <span class="n">computeRobustnessUpperBound</span>
+
+
+<span class="kn">from</span> <span class="nn">lomap</span> <span class="kn">import</span> <span class="n">Ts</span>
+
+<span class="c1"># For debugging purposes</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pdb</span>
+
+
+
+
+<span class="c1"># # # Benchmarking objects and structures</span>
+
+
+<div class="viewcode-block" id="sized_product_iter"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.sized_product_iter">[docs]</a><span class="k">class</span> <span class="nc">sized_product_iter</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Similar to itertools.product, but maintains an internal count of the objects it has left.</span>
+
+<span class="sd">    Works with next() and len().</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">args2</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">args2</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args2</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">args2</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span></div>
+
+
+<div class="viewcode-block" id="named_tuple_iterator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.named_tuple_iterator">[docs]</a><span class="k">class</span> <span class="nc">named_tuple_iterator</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Similar to sized_product_iter, but returns the items as named tuples.</span>
+
+<span class="sd">    Note: Does not take the &quot;repeat&quot; keyword argument used in itertools.product.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="c1"># Expand iterables</span>
+        <span class="n">kwargs_expanded</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())}</span>
+
+        <span class="c1"># Calculate length</span>
+        <span class="n">value_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">kwargs_expanded</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">value_list</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value_list</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Length of items remaining is zero. Check your input lists / iterators.&quot;</span>
+
+        <span class="n">ProductTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;ProductTuple&#39;</span><span class="p">,</span> <span class="n">kwargs_expanded</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="n">starmap</span><span class="p">(</span><span class="n">ProductTuple</span><span class="p">,</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">kwargs_expanded</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span></div>
+
+
+
+<div class="viewcode-block" id="latin_named_tuple_iterator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.latin_named_tuple_iterator">[docs]</a><span class="k">class</span> <span class="nc">latin_named_tuple_iterator</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Similar to named_tuple_iterator, but generates latin hypercube samples to reduce</span>
+<span class="sd">    the amount of testing required.</span>
+
+<span class="sd">    Method for Sampling:</span>
+
+<span class="sd">        First, all input iterators are turned into lists. The number of input iterators</span>
+<span class="sd">        defines the number of &quot;variables&quot; in the sample.</span>
+
+<span class="sd">        The least common multiple (LCM) of all list lengths defines the dimension of the Latin</span>
+<span class="sd">        hypercube samples; i.e. the number of discrete &quot;bins&quot; to be sampled from.</span>
+
+<span class="sd">        A 2D Numpy array is formed in memory. Each column of the array contains the &quot;raw&quot;</span>
+<span class="sd">        coordinates for one Latin hypercube sample routine. (&quot;Raw&quot; means that the coordinates are</span>
+<span class="sd">        based on the LCM of all list lengths). When ``repetition`` &gt; 1, multiple Latin hypercube</span>
+<span class="sd">        routine results are concatenated horizontally into one matrix, with the number of routines</span>
+<span class="sd">        equal to ``repetition``.</span>
+
+<span class="sd">        When next() is called on the iterator, the raw coordinates for a hypercube sample are</span>
+<span class="sd">        matched to the corresponding bins in the stored lists. A named tuple is returned </span>
+<span class="sd">        containing the entries from these bins. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            random_generator:   For a numpy random generator to be passed in.</span>
+
+<span class="sd">            repetitions (int):  The number of times to repeat the Latin hypercube.</span>
+<span class="sd">                                For example, setting ``repetitions=2`` will give</span>
+<span class="sd">                                an iterator that iterates over 2 full Latin</span>
+<span class="sd">                                Hypercube sampling routines.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">random_generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">random_generator</span>
+        
+        <span class="c1"># Expand iterables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())}</span>
+
+        <span class="c1"># Calculate number of iterables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_variables</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span><span class="p">)</span>
+
+        <span class="c1"># Calculate total number of samples needed.</span>
+        <span class="c1"># Uses the least common multiple of all the list lengths.</span>
+        <span class="c1"># self._value_list = list(self._kwargs_expanded.values())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_list_lengths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_list</span><span class="p">]</span>
+        <span class="n">total_samples</span> <span class="o">=</span> <span class="n">lcm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_lengths</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_samples</span> <span class="o">=</span> <span class="n">total_samples</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ProductTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;ProductTuple&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Concatenate multiple Latin hypercubes together if repetitions &gt; 1.</span>
+        <span class="c1"># Each repetition is a complete Latin hypercube sample.</span>
+        <span class="c1"># Each column of self._idx_matrix contains the raw indices for a sampling of the variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">latin_hypercube_sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_samples</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span> <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">=</span> <span class="n">total_samples</span><span class="o">*</span><span class="n">repetitions</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Length of items remaining is zero. Check your input lists / iterators.&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+
+
+        <span class="c1"># self._iter = starmap(ProductTuple, product(*kwargs_expanded.values()))</span>
+
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">attr_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="n">col_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_samples</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span>
+            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_variables</span><span class="p">):</span>
+                <span class="c1"># Convert the raw hypercube index based on the LCM of all list lenghts</span>
+                <span class="c1"># to the actual index of the list</span>
+                <span class="n">raw_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">col_idx</span><span class="p">]</span>
+                <span class="n">list_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_lengths</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                <span class="n">bin_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_samples</span> <span class="o">//</span> <span class="n">list_len</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">raw_idx</span> <span class="o">//</span> <span class="n">bin_size</span>
+                <span class="n">variable_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                <span class="n">variable_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_expanded</span><span class="p">[</span><span class="n">variable_name</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">attr_dict</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_value</span>
+
+            <span class="n">outtuple</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ProductTuple</span><span class="p">(</span><span class="o">**</span><span class="n">attr_dict</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">outtuple</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_items_remaining</span></div>
+
+
+<span class="c1"># # # Optimization File Generation Tools</span>
+
+<span class="k">class</span> <span class="nc">Latin_MILP_File_Generator</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Object that generates IITCHS MILP .lp / .mps problem files using</span>
+<span class="sd">    a BenchmarkOptionsGenerator and Latin Hypercube Sampling. </span>
+
+<span class="sd">    The MILP problem is NOT solved. The output location of the </span>
+<span class="sd">    files can be controlled by setting the </span>
+<span class="sd">    .static_options.transition_system_filename variable for the</span>
+<span class="sd">    input BenchmarkOptionsGenerator.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">BenchmarkOptionsGenerator</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span> <span class="o">=</span> <span class="n">BenchmarkOptionsGenerator</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">create_latin_iterator</span><span class="p">(</span><span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+
+    
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">options_tuple</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Create new Latin iterator</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">create_latin_iterator</span><span class="p">(</span><span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+            <span class="n">options_tuple</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span>
+        
+        
+        <span class="c1"># # Set up the problem instance</span>
+        <span class="c1"># # For all values that are ranges [min,max], choose a random value within the range.</span>
+
+        <span class="n">static_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">static_options</span>
+
+        <span class="c1"># Generates unique filename for each TS</span>
+        <span class="n">ts_save_filename</span> <span class="o">=</span> <span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_filename</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">())))</span>
+
+        <span class="c1"># TODO: Make it possible to use other TS generation functions</span>
+        <span class="n">ts_name</span> <span class="o">=</span> <span class="n">ts_save_filename</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span>
+        <span class="n">multiplicity</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_label_multiplicity_function</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">generateRandomGridTS</span><span class="p">(</span><span class="n">ts_name</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_labels</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">edge_weight_range</span><span class="p">,</span> <span class="n">multiplicity</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+
+        <span class="c1"># Agents</span>
+        <span class="c1"># TODO: Implement more general method for choosing random agents</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="n">generate_agents_by_class</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_list</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+        <span class="c1"># Formula</span>
+        <span class="n">formula</span><span class="p">,</span> <span class="n">num_atomics</span><span class="p">,</span> <span class="n">num_tasks</span> <span class="o">=</span> <span class="n">generate_random_CaTL_formula_and_info</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+        <span class="c1"># Alpha</span>
+        <span class="k">if</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span>
+
+        <span class="n">lp_name</span><span class="p">,</span> <span class="n">mps_name</span> <span class="o">=</span> <span class="n">generate_MILP_problems</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span>
+                                    <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">file_name</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                                    <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                    <span class="n">upperBound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                                    <span class="n">replan_grave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">compress_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lp_name</span><span class="p">,</span> <span class="n">mps_name</span>
+
+
+
+<div class="viewcode-block" id="Latin_MILP_File_Generator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.Latin_MILP_File_Generator">[docs]</a><span class="k">class</span> <span class="nc">Latin_MILP_File_Generator</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Object that generates IITCHS MILP .lp / .mps problem files using</span>
+<span class="sd">    a BenchmarkOptionsGenerator and Latin Hypercube Sampling. </span>
+
+<span class="sd">    The MILP problem is NOT solved. The output location of the </span>
+<span class="sd">    files can be controlled by setting the </span>
+<span class="sd">    .static_options.transition_system_filename variable for the</span>
+<span class="sd">    input BenchmarkOptionsGenerator.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">BenchmarkOptionsGenerator</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span> <span class="o">=</span> <span class="n">BenchmarkOptionsGenerator</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">create_latin_iterator</span><span class="p">(</span><span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+
+    
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">options_tuple</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Create new Latin iterator</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">create_latin_iterator</span><span class="p">(</span><span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+            <span class="n">options_tuple</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span>
+        
+        
+        <span class="c1"># # Set up the problem instance</span>
+        <span class="c1"># # For all values that are ranges [min,max], choose a random value within the range.</span>
+
+        <span class="n">static_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BOG</span><span class="o">.</span><span class="n">static_options</span>
+
+        <span class="c1"># Generates unique filename for each TS</span>
+        <span class="n">ts_save_filename</span> <span class="o">=</span> <span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_filename</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">())))</span>
+
+        <span class="c1"># TODO: Make it possible to use other TS generation functions</span>
+        <span class="n">ts_name</span> <span class="o">=</span> <span class="n">ts_save_filename</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span>
+        <span class="n">multiplicity</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_label_multiplicity_function</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">generateRandomGridTS</span><span class="p">(</span><span class="n">ts_name</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_labels</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">edge_weight_range</span><span class="p">,</span> <span class="n">multiplicity</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+
+        <span class="c1"># Agents</span>
+        <span class="c1"># TODO: Implement more general method for choosing random agents</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="n">generate_agents_by_class</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_list</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+        <span class="c1"># Formula</span>
+        <span class="n">formula</span><span class="p">,</span> <span class="n">num_atomics</span><span class="p">,</span> <span class="n">num_tasks</span> <span class="o">=</span> <span class="n">generate_random_CaTL_formula_and_info</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">)</span>
+
+        <span class="c1"># Alpha</span>
+        <span class="k">if</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span>
+
+        <span class="n">lp_name</span><span class="p">,</span> <span class="n">mps_name</span> <span class="o">=</span> <span class="n">generate_MILP_problems</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span>
+                                    <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">file_name</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                                    <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                    <span class="n">upperBound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                                    <span class="n">replan_grave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">compress_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lp_name</span><span class="p">,</span> <span class="n">mps_name</span></div>
+
+
+
+
+<span class="c1"># # # Problem Option Classes</span>
+
+<span class="c1"># # # Problem Option Classes</span>
+
+<div class="viewcode-block" id="BenchmarkOptionsGenerator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.BenchmarkOptionsGenerator">[docs]</a><span class="k">class</span> <span class="nc">BenchmarkOptionsGenerator</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Class used for setting up problem instance generation for IITCHS benchmarking.</span>
+
+<span class="sd">    All options are in the form of lists, e.g.</span>
+
+<span class="sd">        [configuration_1, configuration_2]</span>
+
+<span class="sd">    Each configuration may be an object or another list.</span>
+
+<span class="sd">    The function [INSERT HERE] produces an iterable that generates tuples of all possible</span>
+<span class="sd">    combinations of configurations. These tuples can be passed to benchmarking functions</span>
+<span class="sd">    to set up and run the optimization problems in parallel.</span>
+<span class="sd">    </span>
+<span class="sd">    For example, given two options</span>
+
+<span class="sd">        option1, option2,</span>
+
+<span class="sd">    each having configurations</span>
+
+<span class="sd">        option1: [[config_1_1], [config_1_2]]</span>
+<span class="sd">        option2: [[config_2_1], [config_2_2]],</span>
+
+<span class="sd">    the iterator returns tuples of the form</span>
+
+<span class="sd">        ([config_1_1], [config_2_1]), ([config_1_1], [config_2_2]), ([config_1_2],[config_2_1]), ([config_1_2], [config_2_2])</span>
+
+<span class="sd">    Generating the actual problem instances from, e.g., configuration ranges for a particular</span>
+<span class="sd">    value is left up to	the benchmarking functions running in parallel (? TBD)</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        If you only want one configuration to be tested for a particular option, simply make the (outer) list have length one, e.g.</span>
+
+<span class="sd">            option_1 = [configuration]</span>
+
+<span class="sd">    Conventions:</span>
+
+<span class="sd">        * Anything appended with &quot;_range_list&quot; is in the form [[min, max],...]. It is meant to present</span>
+<span class="sd">            a list of ranges from which samples can be drawn for a configuration value.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Note:</span>
+
+<span class="sd">            Initialization values have been provided here which should give you somewhat sensible defaults for testing basic</span>
+<span class="sd">            IITCHS scenarios. These fields will need to be updated manually in your code to match the system you are </span>
+<span class="sd">            considering.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># # Transition System Options</span>
+
+        <span class="c1"># States</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]]</span> <span class="c1"># TODO: See if we can use regular TS generation instead of grid TS generation.</span>
+        <span class="c1">#self.number_of_states_list = [[]] # For non-grid TS; not implemented yet</span>
+
+        <span class="c1"># Labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_labels_list</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span><span class="s1">&#39;white&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_label_probabilities_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.8</span><span class="p">]]</span>
+        <span class="c1"># The integers in state_label_multiplicities_list determine how many times the</span>
+        <span class="c1"># states are looped over when applying labels to states. For example, if the</span>
+        <span class="c1"># multiplicity is 2, the state list is iterated over twice, with each state</span>
+        <span class="c1"># receiving one random label on each iteration.</span>
+        <span class="c1">#</span>
+        <span class="c1"># In general, you want the multiplicity integer to grow as the</span>
+        <span class="c1"># total number of states grows.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Use the variable state_label_multiplicity_function_list to define a </span>
+        <span class="c1"># series of _functions_ that map dimensions from dimensions_list into</span>
+        <span class="c1"># corresponding multiplicity integers. Multiple functions can be </span>
+        <span class="c1"># put into the list, and will be iterated over in the option combinations.</span>
+        <span class="k">def</span> <span class="nf">constant_multiplicity</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            Maps any entered dimension to a multiplicity of 1.</span>
+
+<span class="sd">            This is an example function. You should define custom</span>
+<span class="sd">            functions in your code and store them in state_label_multiplicity_function_list.</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="k">def</span> <span class="nf">state_dimension_to_multiplicity</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            Maps the dimension to an integer multiplicity of labels.</span>
+
+<span class="sd">            This is an example function. You should define custom functions</span>
+<span class="sd">            in your code and store them in state_label_multiplicity_function_list.</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="k">if</span> <span class="n">dimension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">3</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_label_multiplicity_function_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">constant_multiplicity</span><span class="p">,</span> <span class="n">state_dimension_to_multiplicity</span><span class="p">]</span>
+
+        <span class="c1"># States and Edges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_weight_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_formation_probability_list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.10</span><span class="p">]</span>
+
+
+        <span class="c1"># # Agent and Capability Options</span>
+
+        <span class="c1"># Agent options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capability_list</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;UV&#39;</span><span class="p">,</span><span class="s1">&#39;Mo&#39;</span><span class="p">,</span><span class="s1">&#39;Vis&#39;</span><span class="p">,</span><span class="s1">&#39;IR&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_capability_classes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">math</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capability_list</span><span class="p">),</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capability_list</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span> <span class="c1"># Number of capability classes, i.e. number of unique combinations of one or more capabilities. For example, {UV}, {Mo, IR}, {UV, Mo, Vis}, etc.</span>
+
+        <span class="c1"># Currently, agent generation is performed using the generate_agents_by_total_and_distribution() function.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_num_agents_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span> <span class="c1"># List of different total number of agents to consider in simulations. Agents will be assigned capabilities based on the probability distributions in self.capability_class_probability_distribution. </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capability_class_probability_distribution_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">num_capability_classes</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">num_capability_classes</span><span class="p">]</span> <span class="c1"># In the form [[distribution1], [distribution2],...]. A list of probability distributions over all possible capability classes.</span>
+
+        <span class="c1"># Capabilities</span>
+    
+
+        <span class="c1"># # Temporal logic options</span>
+        <span class="c1"># Operators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temporal_logic_operators_list</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;F&#39;</span><span class="p">,</span><span class="s1">&#39;G&#39;</span><span class="p">,</span><span class="s1">&#39;FG&#39;</span><span class="p">,</span><span class="s1">&#39;GF&#39;</span><span class="p">]]</span> <span class="c1"># Can also include &#39;U&#39;, but not included by default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boolean_operators_list</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;AND&#39;</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_atomics_per_formula_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="c1"># In the form [[min,max],...]. The number of atomic formulas to include in each generated formula.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator_interval_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">]]</span> <span class="c1"># In the form [[min, max],...]. Defines how we choose random time bounds for the operators; i.e. for F[a,b], a,b \in [min,max] with a &lt; b.</span>
+
+        <span class="c1"># Tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_duration_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">]]</span> <span class="c1"># In the form [[min, max], [min, max]...]. Defines how we choose the duration of tasks; i.e. for a task with duration d, d \in [min,max]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capabilities_per_task_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="c1"># In the form [[min,max]]. Defines the range from which we choose the number of unique capabilities required by a task, i.e. {(UV,1), (IR,4)} requires 2 unique capabilities.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required_agents_per_capability_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="c1"># In the form [[min, max]...]. Number of agents per capability per task, e.g. (UV,4) has 4 agents for the capability UV.</span>
+
+
+        <span class="c1"># # Solver options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solvers_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SCIP&#39;</span><span class="p">,</span> <span class="s1">&#39;GUROBI&#39;</span><span class="p">,</span> <span class="s1">&#39;COIN_CMD&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_time_limit_list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">6e2</span><span class="p">]</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robust_values_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span> <span class="c1"># Include the &#39;robust&#39; option in testing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regularize_values_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound_boolean_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_value_range_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">]]</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_trials_per_combination</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># Integer. The number of trials to perform per combination of all the elements discussed above.</span>
+        
+
+
+
+
+        <span class="c1"># # Static options (e.g. save locations)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">()</span>
+        <span class="c1"># TODO: Change route_planning and route_online_replanning to turn saving the data on / off as per an input variable.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">save_data_bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_dir</span> <span class="o">=</span> <span class="s1">&#39;./output/last_run&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_dir</span> <span class="o">+</span> <span class="s1">&#39;/TS&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">save_parent_dir</span> <span class="o">=</span> <span class="s1">&#39;./output/last_run&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">save_filename</span> <span class="o">=</span> <span class="s1">&#39;./output/last_run&#39;</span>
+        <span class="c1"># Suppresses computing the IIS when using Gurobi and the model is infeasible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">compute_IIS</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Determines the maximum number of times to attempt to generate a feasible problem before giving up</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">max_generation_attempts</span> <span class="o">=</span> <span class="mi">10</span>
+
+        <span class="c1"># Set up the directories</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">save_parent_dir</span><span class="p">):</span> <span class="c1">#Where .yaml files will be saved</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">save_parent_dir</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_dir</span><span class="p">)</span>
+
+
+
+        <span class="c1"># # Internal state variables (not options)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_trials</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#</span>
+
+
+        <span class="c1"># # Make a list of attribute names of attributes that are used directly to generate MILP problem instances.</span>
+        <span class="c1"># # NOTE: If any additional attributes relating to MILP problem generated are added above,</span>
+        <span class="c1"># #         be sure to add their names to this list.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribute_names</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;dimensions&quot;</span><span class="p">,</span> <span class="c1"># ................................. Transition System</span>
+            <span class="s2">&quot;state_labels&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;state_label_probabilities&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;state_label_multiplicity_function&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;edge_weight_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;edge_formation_probability&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_agents_per_class_range&quot;</span><span class="p">,</span> <span class="c1">#................. Agents / Capabilities</span>
+            <span class="s2">&quot;num_capabilities_per_agent_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;capability_list&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;temporal_logic_operators&quot;</span><span class="p">,</span> <span class="c1">#........ CaTL Formula		</span>
+            <span class="s2">&quot;boolean_operators&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;number_of_atomics_per_formula_range&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;operator_interval_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;task_duration_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;capabilities_per_task_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;required_agents_per_capability_range&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;solver&quot;</span><span class="p">,</span> <span class="c1">#.............................. Solver options</span>
+            <span class="s2">&quot;solver_time_limit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;robust_value&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;regularize_value&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper_bound_boolean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;alpha_value_range&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+
+
+<div class="viewcode-block" id="BenchmarkOptionsGenerator.create_iterator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.BenchmarkOptionsGenerator.create_iterator">[docs]</a>    <span class="k">def</span> <span class="nf">create_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Creates iterator returning namedtuples with all possible combination of solver options.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">named_tuple_iterator</span><span class="p">(</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions_list</span><span class="p">,</span> <span class="c1"># ................................. Transition System</span>
+            <span class="n">state_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_labels_list</span><span class="p">,</span>
+            <span class="n">state_label_probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_label_probabilities_list</span><span class="p">,</span>
+            <span class="n">state_label_multiplicity_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_label_multiplicity_function_list</span><span class="p">,</span>
+            <span class="n">edge_weight_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_weight_range_list</span><span class="p">,</span>
+            <span class="n">edge_formation_probability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_formation_probability_list</span><span class="p">,</span>
+            <span class="n">capability_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capability_list</span><span class="p">,</span> <span class="c1">#................. Agents / Capabilities</span>
+            <span class="n">total_num_agents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_num_agents_list</span><span class="p">,</span> 
+            <span class="n">capability_class_probability_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capability_class_probability_distribution_list</span><span class="p">,</span>
+            <span class="n">temporal_logic_operators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_logic_operators_list</span><span class="p">,</span> <span class="c1">#........ CaTL Formula		</span>
+            <span class="n">boolean_operators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boolean_operators_list</span><span class="p">,</span>
+            <span class="n">number_of_atomics_per_formula_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_atomics_per_formula_range_list</span><span class="p">,</span> 
+            <span class="n">operator_interval_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator_interval_range_list</span><span class="p">,</span>
+            <span class="n">task_duration_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_duration_range_list</span><span class="p">,</span>
+            <span class="n">capabilities_per_task_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capabilities_per_task_range_list</span><span class="p">,</span>
+            <span class="n">required_agents_per_capability_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_agents_per_capability_range_list</span><span class="p">,</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvers_list</span><span class="p">,</span> <span class="c1">#.............................. Solver options</span>
+            <span class="n">solver_time_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_time_limit_list</span><span class="p">,</span>
+            <span class="n">robust_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robust_values_list</span><span class="p">,</span> 
+            <span class="n">regularize_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regularize_values_list</span><span class="p">,</span>
+            <span class="n">upper_bound_boolean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound_boolean_list</span><span class="p">,</span>
+            <span class="n">alpha_value_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_value_range_list</span><span class="p">,</span>
+            <span class="n">trial_number_per_combination</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_trials_per_combination</span><span class="p">)</span> 
+        <span class="p">)</span></div>
+    
+<div class="viewcode-block" id="BenchmarkOptionsGenerator.create_latin_iterator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.BenchmarkOptionsGenerator.create_latin_iterator">[docs]</a>    <span class="k">def</span> <span class="nf">create_latin_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Creates iterator returning latin hypercube samples of the variables in question.</span>
+
+<span class="sd">        NOTE: This does NOT use the field self.number_of_trials_per_combination.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">random_generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">random_generator</span>
+
+        <span class="k">return</span> <span class="n">latin_named_tuple_iterator</span><span class="p">(</span>
+            <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">repetitions</span><span class="o">=</span><span class="n">repetitions</span><span class="p">,</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions_list</span><span class="p">,</span> <span class="c1"># ................................. Transition System</span>
+            <span class="n">state_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_labels_list</span><span class="p">,</span>
+            <span class="n">state_label_probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_label_probabilities_list</span><span class="p">,</span>
+            <span class="n">state_label_multiplicity_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_label_multiplicity_function_list</span><span class="p">,</span>
+            <span class="n">edge_weight_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_weight_range_list</span><span class="p">,</span>
+            <span class="n">edge_formation_probability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_formation_probability_list</span><span class="p">,</span>
+            <span class="n">capability_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capability_list</span><span class="p">,</span> <span class="c1">#................. Agents / Capabilities</span>
+            <span class="n">total_num_agents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_num_agents_list</span><span class="p">,</span> 
+            <span class="n">capability_class_probability_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capability_class_probability_distribution_list</span><span class="p">,</span>
+            <span class="n">temporal_logic_operators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temporal_logic_operators_list</span><span class="p">,</span> <span class="c1">#........ CaTL Formula		</span>
+            <span class="n">boolean_operators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boolean_operators_list</span><span class="p">,</span>
+            <span class="n">number_of_atomics_per_formula_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_atomics_per_formula_range_list</span><span class="p">,</span> 
+            <span class="n">operator_interval_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator_interval_range_list</span><span class="p">,</span>
+            <span class="n">task_duration_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_duration_range_list</span><span class="p">,</span>
+            <span class="n">capabilities_per_task_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capabilities_per_task_range_list</span><span class="p">,</span>
+            <span class="n">required_agents_per_capability_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_agents_per_capability_range_list</span><span class="p">,</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvers_list</span><span class="p">,</span> <span class="c1">#.............................. Solver options</span>
+            <span class="n">solver_time_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_time_limit_list</span><span class="p">,</span>
+            <span class="n">robust_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robust_values_list</span><span class="p">,</span> 
+            <span class="n">regularize_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regularize_values_list</span><span class="p">,</span>
+            <span class="n">upper_bound_boolean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound_boolean_list</span><span class="p">,</span>
+            <span class="n">alpha_value_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_value_range_list</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    
+
+<div class="viewcode-block" id="BenchmarkOptionsGenerator.create_latin_file_generator"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.BenchmarkOptionsGenerator.create_latin_file_generator">[docs]</a>    <span class="k">def</span> <span class="nf">create_latin_file_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Creates a file generator that directly generates problem .mps / .lp files</span>
+<span class="sd">        without actually solving the problem.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">Latin_MILP_File_Generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="BenchmarkOptionsGenerator.named_tuple_product"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.BenchmarkOptionsGenerator.named_tuple_product">[docs]</a>    <span class="k">def</span> <span class="nf">named_tuple_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">items</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns</span>
+
+<span class="sd">        Based on the following Stack Overflow post: https://stackoverflow.com/a/9098295</span>
+<span class="sd">        CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0/</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ProductTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;ProductTuple&#39;</span><span class="p">,</span> <span class="n">items</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">starmap</span><span class="p">(</span><span class="n">ProductTuple</span><span class="p">,</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span></div></div>
+
+
+
+<span class="c1"># # An example of a named tuple that can be used to store output values.</span>
+<span class="n">data_column_names</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;Trial_Number&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MILP_Solver_Used&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Runtime_Seconds&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Timed_Out&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Robust&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Regularize&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Alpha&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Upper_Bound&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Grid_TS_Xdim&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Grid_TS_Ydim&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Number_of_Agents&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Agent_List&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Number_of_MILP_Constraints&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Number_of_MILP_Variables&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Objective_Value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Optimizer_Final_Status&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Robustness_Variable_Value&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Normalized_Travel_Time&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TS_Filename&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Solution_Filename&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Error_Occurred&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Formula&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Formula_AST_Bound&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Formula_Num_Tasks&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Formula_Num_TL_Operators&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Formula_Num_Bool_Operators&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Max_Generation_Attempts_Hit&#39;</span>
+<span class="p">]</span>
+
+<span class="c1"># Used to store output results in optimization functions</span>
+<span class="n">OutputTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;OutputTuple&quot;</span><span class="p">,</span> <span class="n">data_column_names</span><span class="p">,</span>
+                         <span class="n">defaults</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">data_column_names</span><span class="p">))</span>
+
+
+
+
+
+<span class="c1"># # # Benchmarking Functions</span>
+
+<div class="viewcode-block" id="solve_one_optimization_problem"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.solve_one_optimization_problem">[docs]</a><span class="k">def</span> <span class="nf">solve_one_optimization_problem</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">static_options</span><span class="p">,</span> <span class="n">trial_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transition_system</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">formula</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Runs one optimization problem using the parameters from the named tuple `options_tuple` argument and the SimpleNamespace object `static_options`.</span>
+
+<span class="sd">    The input `tuple` must be a named tuple obtained from BenchmarkOptionsGenerator.create_iterator().</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        runtime (float): Running time of the optimization algorithm</span>
+<span class="sd">        PuLP_Model:</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># # Set up initial containers.</span>
+    <span class="c1"># hash_value is to ensure name is unique.</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dummymodule_</span><span class="si">{</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">trial_number</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">load_old_files</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># # Initialize arguments.</span>
+    <span class="c1"># # For all values that are ranges [min,max], choose a random value within the range.</span>
+
+    <span class="c1"># Generates unique filename for each TS</span>
+    <span class="n">ts_save_filename</span> <span class="o">=</span> <span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_filename</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_number</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">transition_system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">transition_system</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># TODO: Make it possible to use other TS generation functions</span>
+        <span class="n">ts_name</span> <span class="o">=</span> <span class="n">ts_save_filename</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span>
+        <span class="n">multiplicity</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_label_multiplicity_function</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">generateRandomGridTS</span><span class="p">(</span><span class="n">ts_name</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_labels</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">edge_weight_range</span><span class="p">,</span> <span class="n">multiplicity</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+
+    <span class="c1"># Agents</span>
+    <span class="c1"># TODO: Implement more general method for choosing random agents</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+    <span class="n">class_dict</span> <span class="o">=</span> <span class="n">class_to_capability_dict</span><span class="p">(</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_list</span><span class="p">)</span>
+    <span class="n">agents</span> <span class="o">=</span> <span class="n">generate_agents_by_total_and_distribution</span><span class="p">(</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">total_num_agents</span><span class="p">,</span> <span class="n">class_dict</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_class_probability_distribution</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+    <span class="c1"># Formula</span>
+    <span class="k">if</span> <span class="n">formula</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If no formula was passed in, generate one.</span>
+        <span class="n">formula</span><span class="p">,</span> <span class="n">num_atomics</span><span class="p">,</span> <span class="n">num_tasks</span> <span class="o">=</span> <span class="n">generate_random_CaTL_formula_and_info</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+    <span class="c1"># Alpha</span>
+    <span class="k">if</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span>
+
+    <span class="c1"># # Run and time the optimization problem.</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># For error checking</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="n">PuLP_Model</span><span class="p">,</span> <span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span>
+                                                 <span class="n">file_name</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                                                 <span class="n">replan_req</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">robust</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">robust_value</span><span class="p">,</span>
+                                                 <span class="n">regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                                                 <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                                 <span class="n">upperBound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                                                 <span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">solver</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+                                                 <span class="n">compute_IIS</span><span class="o">=</span><span class="n">static_options</span><span class="o">.</span><span class="n">compute_IIS</span><span class="p">,</span>
+                                                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                                 <span class="n">solver_time_limit</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver_time_limit</span><span class="p">,</span>
+                                                 <span class="n">solver_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">runtime</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="c1"># # Save the resulting data</span>
+
+        <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">error_occurred</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Objective value</span>
+        <span class="k">if</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusOptimal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Objective value is None if the MILP was a feasibility problem with no objective</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusOptimal&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusNotSolved</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusNotSolved&quot;</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">PuLP_Model</span><span class="p">,</span> <span class="s1">&#39;solutionTime&#39;</span><span class="p">):</span>
+                <span class="c1"># The model timed out.</span>
+                <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># The model didn&#39;t time out, but still wasn&#39;t solved. Error.</span>
+                <span class="n">error_occurred</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">elif</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusInfeasible</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusInfeasible&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusUnbounded</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusUnbounded&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;(unknown_status)&quot;</span>
+
+        <span class="n">variablesDict</span> <span class="o">=</span> <span class="n">PuLP_Model</span><span class="o">.</span><span class="n">variablesDict</span><span class="p">()</span>
+        <span class="c1"># Robustness value</span>
+        <span class="k">if</span> <span class="s2">&quot;rho&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># See stl2milp function; if robust = False, then rho = 0.</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Normalized travel time</span>
+        <span class="k">if</span> <span class="s2">&quot;normTravelTime&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;normTravelTime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># # Get information about the formula</span>
+        <span class="c1"># AST bound</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">ast_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+
+        <span class="c1"># Length of the formula</span>
+
+
+        <span class="c1"># TODO: Make the output a more general structure? A different function may</span>
+        <span class="c1">#		need to be written if more general fields are needed.</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime</span><span class="p">,</span>
+            <span class="n">Timed_Out</span><span class="o">=</span><span class="n">timed_out</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">robust_value</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="n">objective_value</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="n">PuLP_Status</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="n">rho_value</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="n">normalized_travel_time</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="n">error_occurred</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span>
+        <span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">error_occurred</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trial_number</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error in solving optimization problem in trial </span><span class="si">{</span><span class="n">trial_number</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error in solving optimization problem (no trial number given).&quot;</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Route_planning did not succeed.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">robust_value</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="n">error_occurred</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed trial number </span><span class="si">{</span><span class="n">trial_number</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+    <span class="c1"># END run_one_optimization_problem</span>
+
+
+
+<div class="viewcode-block" id="solve_problem_robust_and_not_robust"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.solve_problem_robust_and_not_robust">[docs]</a><span class="k">def</span> <span class="nf">solve_problem_robust_and_not_robust</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">static_options</span><span class="p">,</span> <span class="n">trial_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">formula</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Solves an IITCHS problem configuration for both the &#39;robust&#39; and &#39;not robust&#39;</span>
+<span class="sd">    cases, keeping the transition system the same.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="c1"># # Set up initial containers.</span>
+    <span class="c1"># hash_value is to ensure name is unique.</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dummymodule_</span><span class="si">{</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">trial_number</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">load_old_files</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># # Initialize arguments.</span>
+    <span class="c1"># # For all values that are ranges [min,max], choose a random value within the range.</span>
+
+    <span class="c1"># Generates unique filename for each TS</span>
+    <span class="n">ts_save_filename</span> <span class="o">=</span> <span class="n">static_options</span><span class="o">.</span><span class="n">transition_system_filename</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_number</span><span class="p">)))</span>
+
+    <span class="c1"># TODO: Make it possible to use other TS generation functions</span>
+    <span class="n">ts_name</span> <span class="o">=</span> <span class="n">ts_save_filename</span>
+    <span class="n">dimensions</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span>
+    <span class="n">multiplicity</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_label_multiplicity_function</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+
+    <span class="c1"># Alpha</span>
+    <span class="k">if</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">alpha_value_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span>
+
+    <span class="c1"># # Generate the TS, agents, and formula.</span>
+    <span class="c1"># # </span>
+    <span class="c1"># # This for loop generates a TS, set of agents, and CaTL formula.</span>
+    <span class="c1"># # It then checks the robustness upper bound to see if it&#39;s positive.</span>
+    <span class="c1"># # If so, it continues. If not, it generates a new TS, set of agents,</span>
+    <span class="c1"># # and formula. This repeats for max_generation_attempts iterations.</span>
+    <span class="c1"># # </span>
+    <span class="c1"># # If max_generation_attempts is hit, the process exits in failure.</span>
+
+    <span class="n">positive_upper_bound</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">static_options</span><span class="o">.</span><span class="n">max_generation_attempts</span><span class="p">):</span>
+        <span class="c1"># Transition System</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">generateRandomGridTS</span><span class="p">(</span><span class="n">ts_name</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">state_labels</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">edge_weight_range</span><span class="p">,</span> <span class="n">multiplicity</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="c1"># Agents</span>
+        <span class="c1"># TODO: Implement more general method for choosing random agents</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">class_dict</span> <span class="o">=</span> <span class="n">class_to_capability_dict</span><span class="p">(</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_list</span><span class="p">)</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="n">generate_agents_by_total_and_distribution</span><span class="p">(</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">total_num_agents</span><span class="p">,</span> <span class="n">class_dict</span><span class="p">,</span> <span class="n">options_tuple</span><span class="o">.</span><span class="n">capability_class_probability_distribution</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="c1"># Formula</span>
+        <span class="k">if</span> <span class="n">formula</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If no formula was passed in, generate one.</span>
+            <span class="n">formula</span><span class="p">,</span> <span class="n">num_atomics</span><span class="p">,</span> <span class="n">num_tasks</span> <span class="o">=</span> <span class="n">generate_random_CaTL_formula_and_info</span><span class="p">(</span><span class="n">options_tuple</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">computeRobustnessUpperBound</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">upper_bound</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># We can continue with the simulation</span>
+            <span class="n">positive_upper_bound</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+
+    <span class="c1"># If no positive upper bound was found, return the information from the most recently generated attempt.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">positive_upper_bound</span><span class="p">:</span>
+        <span class="c1"># # Get information about the formula</span>
+        <span class="c1"># AST bound</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">ast_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+                <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+                <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+                <span class="n">Runtime_Seconds</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">Robust</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+                <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+                <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Objective_Value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                <span class="n">Error_Occurred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+                <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+                <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+                <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+                <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">Max_Generation_Attempts_Hit</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">output</span><span class="p">]</span>
+
+
+    <span class="c1"># Otherwise, continue to simulate.</span>
+
+
+    <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">debug</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="c1"># # Run and time the optimization problem for both robust = True and robust = False</span>
+    <span class="n">runtime_robust_true</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># For error checking</span>
+    <span class="n">runtime_robust_false</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># # Robust = True</span>
+        <span class="n">robust_true_start_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="n">PuLP_Model_robust_true</span><span class="p">,</span> <span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span>
+                                                 <span class="n">file_name</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                                                 <span class="n">replan_req</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                 <span class="n">regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                                                 <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                                 <span class="n">upperBound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                                                 <span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">solver</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+                                                 <span class="n">compute_IIS</span><span class="o">=</span><span class="n">static_options</span><span class="o">.</span><span class="n">compute_IIS</span><span class="p">,</span>
+                                                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                                 <span class="n">solver_time_limit</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver_time_limit</span><span class="p">,</span>
+                                                 <span class="n">solver_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">runtime_robust_true</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">robust_true_start_time</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed robust configuration for trial number </span><span class="si">{</span><span class="n">trial_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+        <span class="c1"># # Robust = False</span>
+        <span class="n">robust_false_start_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="n">PuLP_Model_robust_false</span><span class="p">,</span> <span class="n">replan_data</span> <span class="o">=</span> <span class="n">route_planning</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">agents</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span>
+                                                 <span class="n">file_name</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+                                                 <span class="n">replan_req</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+                                                 <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                                                 <span class="n">upperBound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+                                                 <span class="n">load_previous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">solver</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+                                                 <span class="n">compute_IIS</span><span class="o">=</span><span class="n">static_options</span><span class="o">.</span><span class="n">compute_IIS</span><span class="p">,</span>
+                                                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                                 <span class="n">solver_time_limit</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver_time_limit</span><span class="p">,</span>
+                                                 <span class="n">solver_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">runtime_robust_false</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">robust_false_start_time</span>
+
+
+        <span class="c1"># # Save the resulting data</span>
+
+        <span class="n">error_occurred_robust_true</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">timed_out_robust_true</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Objective value</span>
+        <span class="k">if</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusOptimal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Objective value is None if the MILP was a feasibility problem with no objective</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusOptimal&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusNotSolved</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusNotSolved&quot;</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">PuLP_Model_robust_true</span><span class="p">,</span> <span class="s1">&#39;solutionTime&#39;</span><span class="p">):</span>
+                <span class="c1"># The model timed out.</span>
+                <span class="n">timed_out_robust_true</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># The model didn&#39;t time out, but still wasn&#39;t solved. Error.</span>
+                <span class="n">error_occurred_robust_true</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusInfeasible</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusInfeasible&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusUnbounded</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusUnbounded&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;(unknown_status)&quot;</span>
+
+        <span class="n">variablesDict</span> <span class="o">=</span> <span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">variablesDict</span><span class="p">()</span>
+        <span class="c1"># Robustness value</span>
+        <span class="k">if</span> <span class="s2">&quot;rho&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># See stl2milp function; if robust = False, then rho = 0.</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Normalized travel time</span>
+        <span class="k">if</span> <span class="s2">&quot;normTravelTime&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;normTravelTime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># # Get information about the formula</span>
+        <span class="c1"># AST bound</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">ast_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+
+        <span class="c1"># Length of the formula</span>
+
+
+        <span class="c1"># TODO: Make the output a more general structure? A different function may</span>
+        <span class="c1">#		need to be written if more general fields are needed.</span>
+        <span class="n">output_robust_true</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime_robust_true</span><span class="p">,</span>
+            <span class="n">Timed_Out</span><span class="o">=</span><span class="n">timed_out_robust_true</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="n">objective_value</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="n">PuLP_Status</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="n">rho_value</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="n">normalized_travel_time</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="n">error_occurred_robust_true</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">Max_Generation_Attempts_Hit</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Save data for when robust = False</span>
+
+        <span class="n">error_occurred_robust_false</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">timed_out_robust_false</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusOptimal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Objective value is None if the MILP was a feasibility problem with no objective</span>
+                <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusOptimal&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusNotSolved</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusNotSolved&quot;</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">PuLP_Model_robust_false</span><span class="p">,</span> <span class="s1">&#39;solutionTime&#39;</span><span class="p">):</span>
+                <span class="c1"># The model timed out.</span>
+                <span class="n">timed_out_robust_false</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># The model didn&#39;t time out, but still wasn&#39;t solved. Error.</span>
+                <span class="n">error_occurred_robust_false</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusInfeasible</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusInfeasible&quot;</span>
+        <span class="k">elif</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpStatusUnbounded</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;LpStatusUnbounded&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PuLP_Status</span> <span class="o">=</span> <span class="s2">&quot;(unknown_status)&quot;</span>
+
+        <span class="n">variablesDict</span> <span class="o">=</span> <span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">variablesDict</span><span class="p">()</span>
+        <span class="c1"># Robustness value</span>
+        <span class="k">if</span> <span class="s2">&quot;rho&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># See stl2milp function; if robust = False, then rho = 0.</span>
+            <span class="n">rho_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Normalized travel time</span>
+        <span class="k">if</span> <span class="s2">&quot;normTravelTime&quot;</span> <span class="ow">in</span> <span class="n">variablesDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="n">variablesDict</span><span class="p">[</span><span class="s2">&quot;normTravelTime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normalized_travel_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># # Get information about the formula</span>
+        <span class="c1"># AST bound</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">CATLFormula</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+        <span class="n">ast_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">bound</span><span class="p">())</span>
+
+        <span class="c1"># Length of the formula</span>
+
+
+        <span class="c1"># TODO: Make the output a more general structure? A different function may</span>
+        <span class="c1">#		need to be written if more general fields are needed.</span>
+        <span class="n">output_robust_false</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime_robust_false</span><span class="p">,</span>
+            <span class="n">Timed_Out</span><span class="o">=</span><span class="n">timed_out_robust_false</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="n">objective_value</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="n">PuLP_Status</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="n">rho_value</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="n">normalized_travel_time</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="n">error_occurred_robust_false</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">Max_Generation_Attempts_Hit</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+
+
+
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">output_robust_true</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime_robust_true</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model_robust_true</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="n">objective_value</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="n">PuLP_Status</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="n">rho_value</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="n">normalized_travel_time</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">Max_Generation_Attempts_Hit</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="n">output_robust_false</span> <span class="o">=</span> <span class="n">OutputTuple</span><span class="p">(</span>
+            <span class="n">Trial_Number</span><span class="o">=</span><span class="n">trial_number</span><span class="p">,</span>
+            <span class="n">MILP_Solver_Used</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="n">Runtime_Seconds</span><span class="o">=</span><span class="n">runtime_robust_false</span><span class="p">,</span>
+            <span class="n">Robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">Regularize</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">regularize_value</span><span class="p">,</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">Upper_Bound</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">upper_bound_boolean</span><span class="p">,</span>
+            <span class="n">Grid_TS_Xdim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">Grid_TS_Ydim</span><span class="o">=</span><span class="n">options_tuple</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">Number_of_Agents</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="n">Agent_List</span><span class="o">=</span><span class="n">agents</span><span class="p">,</span>
+            <span class="n">Number_of_MILP_Constraints</span><span class="o">=</span><span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">numConstraints</span><span class="p">(),</span>
+            <span class="n">Number_of_MILP_Variables</span><span class="o">=</span><span class="n">PuLP_Model_robust_false</span><span class="o">.</span><span class="n">numVariables</span><span class="p">(),</span>
+            <span class="n">Objective_Value</span><span class="o">=</span><span class="n">objective_value</span><span class="p">,</span>
+            <span class="n">Optimizer_Final_Status</span><span class="o">=</span><span class="n">PuLP_Status</span><span class="p">,</span>
+            <span class="n">Robustness_Variable_Value</span><span class="o">=</span><span class="n">rho_value</span><span class="p">,</span>
+            <span class="n">Normalized_Travel_Time</span><span class="o">=</span><span class="n">normalized_travel_time</span><span class="p">,</span>
+            <span class="n">TS_Filename</span><span class="o">=</span><span class="n">ts_save_filename</span><span class="p">,</span>
+            <span class="n">Error_Occurred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">Formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">Formula_AST_Bound</span><span class="o">=</span><span class="n">ast_bound</span><span class="p">,</span>
+            <span class="n">Formula_Num_Tasks</span><span class="o">=</span><span class="n">num_tasks</span><span class="p">,</span>
+            <span class="n">Formula_Num_TL_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="p">,</span>
+            <span class="n">Formula_Num_Bool_Operators</span><span class="o">=</span><span class="n">num_atomics</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">Max_Generation_Attempts_Hit</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed trial number </span><span class="si">{</span><span class="n">trial_number</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">output_robust_true</span><span class="p">,</span> <span class="n">output_robust_false</span><span class="p">]</span></div>
+
+
+
+
+
+<span class="c1"># # # Other utility functions</span>
+
+<div class="viewcode-block" id="lcm"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.lcm">[docs]</a><span class="k">def</span> <span class="nf">lcm</span><span class="p">(</span><span class="n">number_list</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Finds the least common multiple of a list of integers</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">lcm</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">number_list</span><span class="p">:</span>
+        <span class="n">lcm</span> <span class="o">=</span> <span class="n">lcm</span><span class="o">*</span><span class="n">a</span><span class="o">//</span><span class="n">gcd</span><span class="p">(</span><span class="n">lcm</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lcm</span></div>
+
+
+<div class="viewcode-block" id="latin_hypercube_sample"><a class="viewcode-back" href="../benchmarks/benchmarks_source.html#benchmark_tools.latin_hypercube_sample">[docs]</a><span class="k">def</span> <span class="nf">latin_hypercube_sample</span><span class="p">(</span><span class="n">num_variables</span><span class="p">,</span> <span class="n">num_bins</span><span class="p">,</span> <span class="n">random_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generates a discrete latin hypercube sampling.</span>
+
+<span class="sd">    Given n = num_variables and m = num_bins, this function returns an </span>
+<span class="sd">    n x m numpy matrix. The iith column of the matrix contains the coordinates</span>
+<span class="sd">    for the iith hypercube sample. All samples are guaranteed to be unique in</span>
+<span class="sd">    their respective (multidimensional) rows and columns.</span>
+
+<span class="sd">    Example: 2 variables, 10 bins. A possible return matrix is </span>
+
+<span class="sd">        array([[5, 3, 0, 9, 6, 8, 7, 4, 2, 1],</span>
+<span class="sd">               [2, 5, 3, 4, 1, 7, 6, 8, 9, 0]])</span>
+<span class="sd">    </span>
+<span class="sd">        Each column is the 2D index of a sample that is unique in its row and column</span>
+<span class="sd">        (i.e. 10 rooks on a chessboard that don&#39;t threaten each other).</span>
+<span class="sd">    </span>
+<span class="sd">    Example: 3 variables, 10 bins. A possible return matrix is</span>
+
+<span class="sd">        array([[1, 9, 4, 2, 6, 7, 3, 0, 8, 5],</span>
+<span class="sd">               [0, 1, 9, 2, 7, 6, 4, 3, 5, 8],</span>
+<span class="sd">               [6, 4, 8, 3, 0, 2, 9, 7, 5, 1]])</span>
+<span class="sd">        </span>
+<span class="sd">        Each column is the 3D index of a sample that is unique in its 3D rows /columns</span>
+<span class="sd">        (i.e. 10 rooks in a 3D cube chessboard that don&#39;t threaten each other)</span>
+
+<span class="sd">    TODO: Move this to generation_tools.py?</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">random_generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">random_generator</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">num_bins</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_variables</span><span class="p">)])</span></div>
+
+
+<span class="c1"># def latin_hypercube_iterator(*iterables, random_generator=None):</span>
+<span class="c1">#     &#39;&#39;&#39;</span>
+<span class="c1">#     Generates an iterator using Latin hypercube sampling.</span>
+
+<span class="c1">#     Can take a variable number of finite iterables as input.</span>
+<span class="c1">#     &#39;&#39;&#39;</span>
+
+
+
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Not intended to be run as a standalone module.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

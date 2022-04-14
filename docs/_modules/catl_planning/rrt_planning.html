@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning.rrt_planning &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarks/index_benchmarks.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>catl_planning.rrt_planning</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for catl_planning.rrt_planning</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Path Planning Sample Code with Randamized Rapidly-Exploring Random Trees (RRT)</span>
+
+<span class="sd">Author: Zachary Serlin (zserlin@bu.edu)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#--------------------------------------------------------------------------------</span>
+
+<span class="c1">#LL Copyright</span>
+<span class="c1">#This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.</span>
+<span class="c1">#© 2019 Massachusetts Institute of Technology.</span>
+<span class="c1">#The software firmware is provided to you on an As-Is basis</span>
+<span class="c1">#Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.</span>
+<span class="c1">#LL Copyright</span>
+
+<span class="c1">#--------------------------------------------------------------------------------</span>
+
+<span class="c1"># DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</span>
+
+<span class="c1"># This material is based upon work supported by the Under Secretary of Defense for </span>
+<span class="c1"># Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any </span>
+<span class="c1"># opinions, findings, conclusions or recommendations expressed in this material </span>
+<span class="c1"># are those of the author(s) and do not necessarily reflect the views of the Under </span>
+<span class="c1"># Secretary of Defense for Research and Engineering.</span>
+
+<span class="c1"># (C) 2021 Massachusetts Institute of Technology.</span>
+
+<span class="c1"># Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</span>
+
+<span class="c1"># The software/firmware is provided to you on an As-Is basis</span>
+
+<span class="c1"># Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS </span>
+<span class="c1"># Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. </span>
+<span class="c1"># Government rights in this work are defined by DFARS 252.227-7013 or DFARS </span>
+<span class="c1"># 252.227-7014 as detailed above. Use of this work other than as specifically </span>
+<span class="c1"># authorized by the U.S. Government may violate any copyrights that exist in this </span>
+<span class="c1"># work.</span>
+
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="c1">#--------------------------------------------------------------------------------</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">show_animation</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="RRT"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT">[docs]</a><span class="k">class</span> <span class="nc">RRT</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for RRT Planning</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">obstacleList</span><span class="p">,</span> <span class="n">randArea</span><span class="p">,</span> <span class="n">expandDis</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">goalSampleRate</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">maxIter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">num_agents</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">past_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">agentnum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">escape_time</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">box_bounds_obstacleList</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setting Parameter</span>
+
+<span class="sd">        start:Start Position [x,y]</span>
+<span class="sd">        goal:Goal Position [x,y]</span>
+<span class="sd">        obstacleList:obstacle Positions [[x,y,size],...]</span>
+<span class="sd">        randArea:Ramdom Samping Area [min,max]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">randArea</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expandDis</span> <span class="o">=</span> <span class="n">expandDis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goalSampleRate</span> <span class="o">=</span> <span class="n">goalSampleRate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxIter</span> <span class="o">=</span> <span class="n">maxIter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obstacleList</span> <span class="o">=</span> <span class="n">obstacleList</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box_bounds_obstacleList</span> <span class="o">=</span> <span class="n">box_bounds_obstacleList</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span> <span class="o">=</span> <span class="n">num_agents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_paths</span> <span class="o">=</span> <span class="n">past_paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agentnum</span><span class="o">=</span><span class="n">agentnum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">escape_time</span> <span class="o">=</span> <span class="n">escape_time</span>
+
+<div class="viewcode-block" id="RRT.Planning"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT.Planning">[docs]</a>    <span class="k">def</span> <span class="nf">Planning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">safe_size</span><span class="p">,</span><span class="n">agent_size</span><span class="p">,</span><span class="n">animation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pathplanning</span>
+<span class="sd">        animation: flag for animation on or off</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_clock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">]</span>
+        <span class="n">saved_start</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">restarted</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1">#If we get stuck - restart</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">+</span> <span class="mi">30</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                    <span class="bp">self</span> <span class="o">=</span> <span class="n">saved_start</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">restarted</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="n">restarted</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            if count &gt; 5:</span>
+<span class="sd">                saved_start.sigma += self.sigma</span>
+<span class="sd">                #print(&#39;no solution&#39;)</span>
+<span class="sd">                self = saved_start</span>
+<span class="sd">                restarted = 1</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+
+            <span class="n">rand_num</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="c1"># Random Sampling</span>
+            <span class="k">if</span> <span class="n">rand_num</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">goalSampleRate</span><span class="p">:</span>
+                <span class="n">print_out</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">restarted</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">rand_num</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">:</span>
+                        <span class="n">rnd</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">rnd</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
+                <span class="k">if</span> <span class="n">restarted</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">rnd</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rnd</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">start_clock</span> <span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">escape_time</span><span class="p">:</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">                    plot_bounds = [0, 140, 0, 60]</span>
+<span class="sd">                    plt.plot(self.start.x, self.start.y, &quot;ok&quot;)</span>
+<span class="sd">                    plt.plot(self.end.x, self.end.y, &quot;xk&quot;)</span>
+<span class="sd">                    PlotCircle(self.start.x, self.start.y,agent_size,plot_bounds)</span>
+<span class="sd">                    PlotCircle(self.end.x, self.end.y,agent_size,plot_bounds)</span>
+<span class="sd">                    plt.axis(plot_bounds)</span>
+<span class="sd">                    plt.grid(True)</span>
+<span class="sd">                    for (x, y, size) in self.obstacleList:</span>
+<span class="sd">                        PlotCircle(x, y, size,plot_bounds)</span>
+<span class="sd">                    if self.past_paths != None:</span>
+<span class="sd">                        for i in range(0,len(self.past_paths)):</span>
+<span class="sd">                            for j in range(0,len(self.past_paths[i])):</span>
+<span class="sd">                                if j == 0:</span>
+<span class="sd">                                    PlotCircle(self.past_paths[i][j][0],self.past_paths[i][j][1],agent_size,plot_bounds)</span>
+<span class="sd">                                    plt.plot(self.past_paths[i][j][0],self.past_paths[i][j][1],&quot;sr&quot;)</span>
+<span class="sd">                                else:</span>
+<span class="sd">                                    plt.plot(self.past_paths[i][j][0],self.past_paths[i][j][1],&quot;.r&quot;)</span>
+<span class="sd">                    plt.pause(0.01)</span>
+<span class="sd">                    plt.grid(True)</span>
+<span class="sd">                    plt.pause(0.01)  # Need for Mac</span>
+<span class="sd">                    plt.show(block=False)</span>
+<span class="sd">                    plt.pause(0.1)</span>
+<span class="sd">                    plt.waitforbuttonpress()</span>
+<span class="sd">                    &#39;&#39;&#39;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;returned empty&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">path</span>
+                <span class="n">print_out</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1">#print(self.obstacleList,self.end.x,self.end.y,self.start.x,self.start.y)</span>
+
+            <span class="c1"># Find nearest node</span>
+            <span class="n">nind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetNearestListIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">,</span> <span class="n">rnd</span><span class="p">)</span>
+            <span class="c1"># print(nind)</span>
+
+            <span class="c1"># expand tree</span>
+            <span class="n">nearestNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">[</span><span class="n">nind</span><span class="p">]</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">rnd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">nearestNode</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">rnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nearestNode</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="n">newNode</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">nearestNode</span><span class="p">)</span>
+            <span class="n">newNode</span><span class="o">.</span><span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expandDis</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+            <span class="n">newNode</span><span class="o">.</span><span class="n">y</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expandDis</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+            <span class="n">newNode</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">nind</span>
+            <span class="n">newNode</span><span class="o">.</span><span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">print_out</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__CollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">__AgentCollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="n">safe_size</span><span class="p">,</span><span class="n">agent_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_paths</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">__BoundsCollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_bounds_obstacleList</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__CollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">):</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__BoxCollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_bounds_obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__CollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">):</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__AgentCollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="n">safe_size</span><span class="p">,</span><span class="n">agent_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_paths</span><span class="p">):</span>
+                <span class="n">count</span> <span class="o">+=</span><span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__BoundsCollisionCheck</span><span class="p">(</span><span class="n">newNode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">):</span>
+                <span class="n">count</span> <span class="o">+=</span><span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newNode</span><span class="p">)</span>
+
+            <span class="c1"># check goal</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">newNode</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">newNode</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">y</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expandDis</span><span class="p">:</span>
+                <span class="c1">#print(&quot;Goal!!&quot;)</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">animation</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DrawGraph</span><span class="p">(</span><span class="n">rnd</span><span class="p">)</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">y</span><span class="p">]]</span>
+        <span class="n">lastIndex</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">[</span><span class="n">lastIndex</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">[</span><span class="n">lastIndex</span><span class="p">]</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">node</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span><span class="p">])</span>
+            <span class="n">lastIndex</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">y</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">path</span></div>
+
+<div class="viewcode-block" id="RRT.DrawGraph"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT.DrawGraph">[docs]</a>    <span class="k">def</span> <span class="nf">DrawGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bounds</span><span class="p">,</span> <span class="n">rnd</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rnd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rnd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rnd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;^k&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">node</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span>
+                         <span class="n">node</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodeList</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">],</span> <span class="s2">&quot;-g&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacleList</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PlotCircle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;xr&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;xr&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RRT.PlotCircle"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT.PlotCircle">[docs]</a>    <span class="k">def</span> <span class="nf">PlotCircle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="n">deg</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="n">deg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">xl</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deg</span><span class="p">]</span>
+        <span class="n">yl</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deg</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xl</span><span class="p">,</span> <span class="n">yl</span><span class="p">,</span> <span class="s2">&quot;-k&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RRT.GetNearestListIndex"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT.GetNearestListIndex">[docs]</a>    <span class="k">def</span> <span class="nf">GetNearestListIndex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodeList</span><span class="p">,</span> <span class="n">rnd</span><span class="p">):</span>
+        <span class="n">dlist</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">rnd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">rnd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                 <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodeList</span><span class="p">]</span>
+        <span class="n">minind</span> <span class="o">=</span> <span class="n">dlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">dlist</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">minind</span></div>
+
+    <span class="k">def</span> <span class="nf">__CollisionCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="n">obstacleList</span><span class="p">:</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">ox</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">oy</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">size</span><span class="o">+</span><span class="n">agent_size</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># collision</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># safe</span>
+    
+    <span class="k">def</span> <span class="nf">__BoxCollisionCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node</span><span class="p">,</span><span class="n">box_bounds_obstacleList</span><span class="p">,</span><span class="n">agent_size</span><span class="p">):</span>
+        
+        <span class="k">for</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span><span class="n">xmax</span><span class="p">,</span><span class="n">ymin</span><span class="p">,</span><span class="n">ymax</span><span class="p">)</span> <span class="ow">in</span> <span class="n">box_bounds_obstacleList</span><span class="p">:</span>
+            
+            <span class="n">above_bottom</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">ymin</span>
+            <span class="n">below_top</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">ymax</span> 
+            <span class="n">right_of_left</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">xmin</span>
+            <span class="n">left_of_right</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">xmax</span>
+            <span class="k">if</span> <span class="n">above_bottom</span> <span class="ow">and</span> <span class="n">below_top</span> <span class="ow">and</span> <span class="n">right_of_left</span> <span class="ow">and</span> <span class="n">left_of_right</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># collision</span>
+
+
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># safe</span>
+    <span class="k">def</span> <span class="nf">__AgentCollisionCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">safe_size</span><span class="p">,</span><span class="n">agent_size</span><span class="p">,</span><span class="n">past_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">past_paths</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">past_paths</span><span class="p">)):</span>
+                <span class="n">last_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">past_paths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;</span> <span class="n">last_pos</span><span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">past_paths</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">node</span><span class="o">.</span><span class="n">t</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">past_paths</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">node</span><span class="o">.</span><span class="n">t</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">safe_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">agent_size</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># collision</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">past_paths</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">last_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">past_paths</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">last_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">safe_size</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">agent_size</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># collision</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># safe</span>
+
+    <span class="k">def</span> <span class="nf">__BoundsCollisionCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">bounds</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">node</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">or</span> <span class="n">node</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># collision</span>
+
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># safe</span></div>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    RRT Node</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="GetPathLength"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.GetPathLength">[docs]</a><span class="k">def</span> <span class="nf">GetPathLength</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">le</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+        <span class="n">le</span> <span class="o">+=</span> <span class="n">d</span>
+
+    <span class="k">return</span> <span class="n">le</span></div>
+
+
+<div class="viewcode-block" id="GetTargetPoint"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.GetTargetPoint">[docs]</a><span class="k">def</span> <span class="nf">GetTargetPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">targetL</span><span class="p">):</span>
+    <span class="n">le</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ti</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">lastPairLen</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span><span class="p">)</span>
+        <span class="n">le</span> <span class="o">+=</span> <span class="n">d</span>
+        <span class="k">if</span> <span class="n">le</span> <span class="o">&gt;=</span> <span class="n">targetL</span><span class="p">:</span>
+            <span class="n">ti</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">lastPairLen</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="k">break</span>
+
+    <span class="n">partRatio</span> <span class="o">=</span> <span class="p">(</span><span class="n">le</span> <span class="o">-</span> <span class="n">targetL</span><span class="p">)</span> <span class="o">/</span> <span class="n">lastPairLen</span>
+    <span class="c1">#  print(partRatio)</span>
+    <span class="c1">#  print((ti,len(path),path[ti],path[ti+1]))</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">ti</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">ti</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">ti</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">partRatio</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">ti</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">ti</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">path</span><span class="p">[</span><span class="n">ti</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">partRatio</span>
+    <span class="c1">#  print((x,y))</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ti</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="LineCollisionCheck"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.LineCollisionCheck">[docs]</a><span class="k">def</span> <span class="nf">LineCollisionCheck</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">obstacleList</span><span class="p">):</span>
+    <span class="c1"># Line bounds = [0, 140, 0, 60]Equation</span>
+
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">first</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">first</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">second</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">second</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">-</span> <span class="n">x2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="n">obstacleList</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">ox</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">oy</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">b</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1">#  print(&quot;OK&quot;)</span>
+
+    <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># OK</span></div>
+
+<div class="viewcode-block" id="obstacle_collision_check"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.obstacle_collision_check">[docs]</a><span class="k">def</span> <span class="nf">obstacle_collision_check</span><span class="p">(</span><span class="n">point</span><span class="p">,</span><span class="n">obstacleList</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">ox</span><span class="p">,</span><span class="n">oy</span><span class="p">,</span><span class="n">size</span> <span class="ow">in</span> <span class="n">obstacleList</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">ox</span><span class="o">-</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">oy</span><span class="o">-</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">2</span><span class="p">)),</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="n">size</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="PathSmoothing"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.PathSmoothing">[docs]</a><span class="k">def</span> <span class="nf">PathSmoothing</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">maxIter</span><span class="p">,</span> <span class="n">obstacleList</span><span class="p">):</span>
+    <span class="c1">#  print(&quot;PathSmoothing&quot;)</span>
+
+    <span class="n">le</span> <span class="o">=</span> <span class="n">GetPathLength</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initial Path: &#39;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxIter</span><span class="p">):</span>
+        <span class="c1"># Sample two points</span>
+        <span class="n">pickPoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">le</span><span class="p">),</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">le</span><span class="p">)]</span>
+        <span class="n">pickPoints</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="c1">#  print(pickPoints)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">GetTargetPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pickPoints</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1">#  print(first)</span>
+        <span class="n">second</span> <span class="o">=</span> <span class="n">GetTargetPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pickPoints</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1">#  print(second)</span>
+
+        <span class="k">if</span> <span class="n">first</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">second</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">second</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+
+        <span class="k">if</span> <span class="n">second</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">first</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># collision check</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">LineCollisionCheck</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">obstacleList</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Create New path</span>
+        <span class="n">newPath</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">newPath</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">path</span><span class="p">[:</span><span class="n">first</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">newPath</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">first</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">first</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">newPath</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">second</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">second</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">newbounds</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">second</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">newPath</span>
+        <span class="n">le</span> <span class="o">=</span> <span class="n">GetPathLength</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1">#print(&#39;Final Path: &#39;,len(path))</span>
+
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="RRT_Get_Path"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.RRT_Get_Path">[docs]</a><span class="k">def</span> <span class="nf">RRT_Get_Path</span><span class="p">(</span><span class="n">regions_to_avoid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">goal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">past_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">start_region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">goal_region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">agentnum</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">agent_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">expandDis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span><span class="n">max_rrt_time</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">box_bounds_obs_regions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># ====Search Path with RRT====</span>
+    <span class="c1"># Parameter</span>
+
+<span class="c1">#Need to setup timed backcheck - if time at last node is too long, either restart whole thing or do RRT*</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1">#Constant Obstacles</span>
+<span class="c1"># [x,y,size]</span>
+    <span class="n">obstacleList</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="n">regions_to_avoid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">regions_to_avoid</span><span class="p">):</span>
+        <span class="n">obstacleList</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">regions_to_avoid</span><span class="p">))</span>
+
+
+    <span class="n">start</span> <span class="o">=</span> <span class="p">[(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+
+
+    <span class="n">goal</span> <span class="o">=</span> <span class="p">[(</span><span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+
+    <span class="c1">#To run function, we give it a set of regions no to visit as obstacles,</span>
+    <span class="c1">#the start point for the agent in question, and all prior trajectories we have</span>
+
+    <span class="c1">#I think this might be slower than I hoped - there are a ton of obstacles.</span>
+    <span class="c1">#past_paths = []</span>
+    <span class="c1">#start=[(5, 5),(30,20),(80,50),(100,50),(120,50),(140,50),(80,10),(20,30),(25,55),(100,5)]</span>
+    <span class="c1">#goal=[(125,30),(165,30),(145,35),(60,5),(5,5),(5,25),(5,55),(155,55),(120,5),(140,50)]</span>
+    <span class="n">num_agents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">plot_bounds</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="c1">#if agent_radius == None:</span>
+    <span class="c1">#    agent_radius = np.ones(num_agents)*3</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plt.plot(start[0][0], start[0][1], &quot;ok&quot;)</span>
+<span class="sd">    plt.plot(goal[0][0], goal[0][1], &quot;xk&quot;)</span>
+<span class="sd">    plt.axis(plot_bounds)</span>
+<span class="sd">    plt.grid(True)</span>
+<span class="sd">    for (x, y, size) in obstacleList:</span>
+<span class="sd">        PlotCircle(x, y, size,plot_bounds)</span>
+<span class="sd">    if past_paths != None:</span>
+<span class="sd">        for i in range(0,len(past_paths)):</span>
+<span class="sd">            for j in range(0,len(past_paths[i])):</span>
+<span class="sd">                plt.plot(past_paths[i][j][0],past_paths[i][j][1],&quot;sr&quot;)</span>
+<span class="sd">    plt.pause(0.01)</span>
+<span class="sd">    plt.gridbounds = [0, 140, 0, 60](True)</span>
+<span class="sd">    plt.pause(0.01)  # Need for Mac</span>
+<span class="sd">    plt.show(block=False)</span>
+<span class="sd">    plt.pause(0.1)</span>
+<span class="sd">    plt.waitforbuttonpress()</span>
+
+<span class="sd">    plt.clf()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#Start Planning with RRT</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">rrt</span> <span class="o">=</span> <span class="n">RRT</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">goal</span><span class="o">=</span><span class="n">goal</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+              <span class="n">randArea</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span><span class="n">expandDis</span><span class="o">=</span><span class="n">expandDis</span><span class="p">,</span> <span class="n">obstacleList</span><span class="o">=</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">past_paths</span><span class="o">=</span><span class="n">past_paths</span><span class="p">,</span><span class="n">agentnum</span><span class="o">=</span><span class="n">agentnum</span><span class="p">,</span><span class="n">escape_time</span><span class="o">=</span><span class="n">max_rrt_time</span><span class="p">,</span><span class="n">box_bounds_obstacleList</span><span class="o">=</span><span class="n">box_bounds_obs_regions</span><span class="p">)</span>
+    <span class="c1">#rrt = RRT(start=[(0, 0),(10,0)], goal=[(5, 10),(0,10)],</span>
+    <span class="c1">#          randArea=[-2, 15], obstacleList=obstacleList)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">agent_radius</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">rrt</span><span class="o">.</span><span class="n">Planning</span><span class="p">(</span><span class="n">safe_size</span><span class="o">=</span><span class="n">agent_radius</span><span class="p">,</span><span class="n">agent_size</span><span class="o">=</span><span class="n">agent_radius</span><span class="p">[</span><span class="n">agentnum</span><span class="p">],</span><span class="n">animation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">rrt</span><span class="o">.</span><span class="n">Planning</span><span class="p">(</span><span class="n">safe_size</span><span class="o">=</span><span class="n">agent_radius</span><span class="p">,</span><span class="n">agent_size</span><span class="o">=</span><span class="n">agent_radius</span><span class="p">,</span><span class="n">animation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Path smoothing</span>
+    <span class="c1">#maxIter = 1000</span>
+    <span class="c1">#smoothedPath = PathSmoothing(path, maxIter, obstacleList)</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    plt.plot(start[0][0], start[0][1], &quot;or&quot;)</span>
+<span class="sd">    plt.plot(goal[0][0], goal[0][1], &quot;xr&quot;)</span>
+<span class="sd">    plt.axis(plot_bounds)</span>
+<span class="sd">    plt.grid(True)</span>
+<span class="sd">    for (x, y, size) in obstacleList:</span>
+<span class="sd">        Plotbounds = [0, 140, 0, 60]Circle(x, y, size,plot_bounds)</span>
+<span class="sd">    if past_paths != None:</span>
+<span class="sd">        for i in range(0,len(past_paths)):</span>
+<span class="sd">            for j in range(0,len(past_paths[i])):</span>
+<span class="sd">                PlotCircle(past_paths[i][j][0],past_paths[i][j][1],3,plot_bounds)</span>
+<span class="sd">    plt.pause(0.01)</span>
+<span class="sd">    plt.grid(True)</span>
+<span class="sd">    plt.pause(0.01)  # Need for Mac</span>
+<span class="sd">    plt.show(block=False)</span>
+<span class="sd">    plt.pause(0.1)</span>
+<span class="sd">    plt.waitforbuttonpress()</span>
+
+<span class="sd">    plt.clf()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#print(&#39;All Found&#39;)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    print(&#39;Time:&#39;,(time.time()-t))</span>
+<span class="sd">    # Draw final path</span>
+<span class="sd">    if show_animation:</span>
+<span class="sd">        #rrt.DrawGraph(plot_bounds)</span>
+<span class="sd">        for i in range(0,num_agents):</span>
+<span class="sd">            plt.plot([x for (x, y) in past_paths[i]], [y for (x, y) in past_paths[i]], &#39;-r&#39;)</span>
+<span class="sd">            #plt.plot([x for (x, y) in smoothedPath], [</span>
+<span class="sd">            #    y for (x, y) in smoothedPath], &#39;-b&#39;)</span>
+<span class="sd">            plt.plot(start[i][0], start[i][1], &quot;or&quot;)</span>
+<span class="sd">            plt.plot(goal[i][0], goal[i][1], &quot;xr&quot;)</span>
+<span class="sd">        #plt.xlim(plot_bounds[0],plot_bounds[1])</span>
+<span class="sd">        #plt.ylim(plot_bounds[2],plot_bounds[3])</span>
+<span class="sd">        plt.axis(plot_bounds)</span>
+<span class="sd">        plt.grid(True)</span>
+<span class="sd">        for (x, y, size) in obstacleList:</span>
+<span class="sd">            PlotCircle(x, y, size,plot_bounds)</span>
+<span class="sd">        plt.pause(0.01)</span>
+<span class="sd">        plt.grid(True)</span>
+<span class="sd">        plt.pause(0.01)  # Need for Mac</span>
+<span class="sd">        plt.show()</span>
+
+
+<span class="sd">    #Play Trajectories as video</span>
+<span class="sd">    max_time = 0</span>
+<span class="sd">    for i in range(0,num_agents):</span>
+<span class="sd">        if len(past_paths[i]) &gt; max_time:</span>
+<span class="sd">            max_time = len(past_paths[i])</span>
+<span class="sd">    for t in range(0,max_time):</span>
+<span class="sd">        DrawGraph(plot_bounds,past_paths,num_agents,start,goal,agent_radius,obstacleList,t)</span>
+<span class="sd">        plt.pause(.01)</span>
+<span class="sd">        time.sleep(.01)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawGraph"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.DrawGraph">[docs]</a><span class="k">def</span> <span class="nf">DrawGraph</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span><span class="n">past_paths</span><span class="p">,</span><span class="n">num_agents</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">goal</span><span class="p">,</span><span class="n">agent_radius</span><span class="p">,</span><span class="n">obstacleList</span><span class="p">,</span><span class="n">t</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_agents</span><span class="p">):</span>
+        <span class="n">max_time</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">past_paths</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">max_time</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">start</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;.r&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;xr&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">past_paths</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">past_paths</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="s2">&quot;sb&quot;</span><span class="p">,</span><span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">start</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;.r&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;xr&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">goal</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="s2">&quot;sb&quot;</span><span class="p">,</span><span class="n">markersize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="n">obstacleList</span><span class="p">:</span>
+        <span class="n">PlotCircle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="c1">#plt.xlim(bounds[0],bounds[1])</span>
+    <span class="c1">#plt.ylim(bounds[2],bounds[3])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlotCircle"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.rrt_planning.PlotCircle">[docs]</a><span class="k">def</span> <span class="nf">PlotCircle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span><span class="n">bounds</span><span class="p">):</span>
+    <span class="n">deg</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">deg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">xl</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deg</span><span class="p">]</span>
+    <span class="n">yl</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deg</span><span class="p">]</span>
+    <span class="c1">#plt.xlim(bounds[0],bounds[1])</span>
+    <span class="c1">#plt.ylim(bounds[2],bounds[3])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xl</span><span class="p">,</span> <span class="n">yl</span><span class="p">,</span> <span class="s2">&quot;-k&quot;</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

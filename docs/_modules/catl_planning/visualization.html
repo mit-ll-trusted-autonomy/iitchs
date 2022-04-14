@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning.visualization &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarks/index_benchmarks.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>catl_planning.visualization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for catl_planning.visualization</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+<span class="c1">#</span>
+<span class="c1"># Contributors:</span>
+<span class="c1">#   Cristian Ioan Vasile (cvasile@bu.edu) (cvasile@lehigh.edu)</span>
+<span class="c1">#   James Usevitch (james.usevitch@ll.mit.edu)</span>
+<span class="c1">#   Makai Mann (makai.mann@ll.mit.edu)</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span> <span class="k">as</span> <span class="nn">it</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">geom</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.lines</span> <span class="k">as</span> <span class="nn">mlines</span>
+<span class="kn">from</span> <span class="nn">matplotlib.collections</span> <span class="kn">import</span> <span class="n">LineCollection</span>
+
+
+
+<div class="viewcode-block" id="drawPoint"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.drawPoint">[docs]</a><span class="k">def</span> <span class="nf">drawPoint</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">pointx</span><span class="p">,</span><span class="n">pointy</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws a point in the planar environment.&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">style</span><span class="p">:</span>
+        <span class="n">viewport</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pointx</span><span class="p">,</span> <span class="n">pointy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">style</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">viewport</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">pointx</span><span class="p">,</span> <span class="n">pointy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="drawRegion"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.drawRegion">[docs]</a><span class="k">def</span> <span class="nf">drawRegion</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">textStyle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws a polygonal region in a planar environment.&#39;&#39;&#39;</span>
+    <span class="n">polygon</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">polygon</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">style</span><span class="p">:</span>
+        <span class="n">style</span><span class="p">[</span><span class="s1">&#39;facecolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;facecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;white&#39;</span><span class="p">)</span>
+        <span class="n">style</span><span class="p">[</span><span class="s1">&#39;edgecolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;edgecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;facecolor&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="s1">&#39;edgecolor&#39;</span><span class="p">:</span><span class="s1">&#39;black&#39;</span><span class="p">}</span>
+    <span class="n">viewport</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="o">**</span><span class="n">style</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">polygon</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">textStyle</span><span class="p">:</span>
+            <span class="n">textStyle</span><span class="p">[</span><span class="s1">&#39;horizontalalignment&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                                  <span class="n">textStyle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;horizontalalignment&#39;</span><span class="p">,</span> <span class="s1">&#39;center&#39;</span><span class="p">)</span>
+            <span class="n">textStyle</span><span class="p">[</span><span class="s1">&#39;verticalalignment&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                                    <span class="n">textStyle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verticalalignment&#39;</span><span class="p">,</span> <span class="s1">&#39;center&#39;</span><span class="p">)</span>
+            <span class="n">textStyle</span><span class="p">[</span><span class="s1">&#39;fontsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">textStyle</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">textStyle</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;horizontalalignment&#39;</span> <span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;verticalalignment&#39;</span> <span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;fontsize&#39;</span> <span class="p">:</span> <span class="mi">12</span><span class="p">}</span>
+        <span class="n">viewport</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">textStyle</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">polygon</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="drawGraph"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.drawGraph">[docs]</a><span class="k">def</span> <span class="nf">drawGraph</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Plots the given graph in the viewport.&#39;&#39;&#39;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)]))</span>
+    <span class="n">viewport</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">node_color</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[(</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">])</span>
+                                                <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="n">v</span><span class="p">]</span>
+    <span class="n">artist</span> <span class="o">=</span> <span class="n">LineCollection</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
+    <span class="n">viewport</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">artist</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="drawPolicy"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.drawPolicy">[docs]</a><span class="k">def</span> <span class="nf">drawPolicy</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">solution</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha_min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws the solution path with a fading effect.&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">alpha_min</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">transparency</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">transparency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">alpha_min</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">it</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="n">solution</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">transparency</span><span class="p">):</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">u</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">u</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">hold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+                  <span class="n">length_includes_head</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="show_environment"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.show_environment">[docs]</a><span class="k">def</span> <span class="nf">show_environment</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws the environment and optionally save it to a file.&#39;&#39;&#39;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">viewport</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">drawRegion</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                            <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;facecolor&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]},</span> <span class="n">text</span><span class="o">=</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;position&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">drawGraph</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span>
+                            <span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">fig</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="show_world"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.show_world">[docs]</a><span class="k">def</span> <span class="nf">show_world</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">fig</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws a polygonal regions in a planar environment with labels.&#39;&#39;&#39;</span>
+    <span class="n">viewport</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">drawRegion</span><span class="p">(</span><span class="n">viewport</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                            <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;facecolor&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]})</span><span class="c1"># text=u)</span>
+        <span class="k">if</span> <span class="s1">&#39;position&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span><span class="n">viewport</span></div>
+
+<div class="viewcode-block" id="show_environment_agents"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.show_environment_agents">[docs]</a><span class="k">def</span> <span class="nf">show_environment_agents</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">agents</span><span class="p">,</span><span class="n">fig</span><span class="p">,</span><span class="n">viewport</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws agents in the environment.&#39;&#39;&#39;</span>
+    <span class="n">sys</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">agents</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">sys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
+    <span class="n">cent_x</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">cent_y</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">x_vals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y_vals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">)):</span>
+        <span class="n">indiv_sys</span> <span class="o">=</span> <span class="n">sys</span><span class="p">[</span><span class="n">sys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;q&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="n">old_x</span> <span class="o">=</span> <span class="n">cent_x</span>
+        <span class="n">old_y</span> <span class="o">=</span> <span class="n">cent_y</span>
+        <span class="n">cent_x</span> <span class="o">=</span> <span class="n">indiv_sys</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cent_y</span> <span class="o">=</span> <span class="n">indiv_sys</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">cap</span> <span class="o">=</span> <span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="p">(</span><span class="n">cap</span><span class="p">)</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">num</span> <span class="o">-=</span><span class="mi">1</span>
+
+
+        <span class="k">if</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;o&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.9</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.9</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.9</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;m&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.9</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;p&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.9</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mf">0.4</span>
+
+        <span class="n">ang_div</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="n">num</span><span class="p">)</span>
+        <span class="n">randx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+        <span class="n">randy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="p">):</span>
+             <span class="n">randx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+             <span class="n">randy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+             <span class="n">pointx</span> <span class="o">=</span> <span class="n">cent_x</span><span class="o">+</span> <span class="n">r</span><span class="o">*</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">randx</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">randx</span><span class="p">))</span>
+             <span class="n">pointy</span> <span class="o">=</span> <span class="n">cent_y</span> <span class="o">+</span> <span class="n">r</span><span class="o">*</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">randy</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">randy</span><span class="p">))</span>
+            <span class="c1">#print(pointx,pointy)</span>
+             <span class="n">viewport</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">pointx</span><span class="p">,</span><span class="n">pointy</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1">#drawPoint(viewport, point, color, style=None)</span>
+    <span class="n">markerList</span> <span class="o">=</span> <span class="p">[</span><span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;{Vis, IR}&#39;</span><span class="p">),</span>
+                 <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;{Vis, UV}&#39;</span><span class="p">),</span>
+                 <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;{Vis, Mo}&#39;</span><span class="p">),</span>
+                 <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;{UV, Mo}&#39;</span><span class="p">),</span>
+                <span class="n">mlines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;{UV, IR}&#39;</span><span class="p">)]</span>
+
+
+
+    <span class="c1">#plt.legend(handles=markerList)</span>
+    <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span>
+                            <span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">fig</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="c1">#plt.close()</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="show_transition_agents"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.visualization.show_transition_agents">[docs]</a><span class="k">def</span> <span class="nf">show_transition_agents</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">agents</span><span class="p">,</span><span class="n">plt</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Draws edges in the environment.&#39;&#39;&#39;</span>
+    <span class="n">sys</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">agents</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">sys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
+    <span class="n">cent_x1</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">cent_y1</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">cent_x2</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">cent_y2</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">)):</span>
+        <span class="n">indiv_sys1</span> <span class="o">=</span> <span class="n">sys</span><span class="p">[</span><span class="n">sys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;q&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="n">indiv_sys2</span> <span class="o">=</span> <span class="n">sys</span><span class="p">[</span><span class="n">sys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;q&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="n">old_x1</span> <span class="o">=</span> <span class="n">cent_x1</span>
+        <span class="n">old_y1</span> <span class="o">=</span> <span class="n">cent_y1</span>
+        <span class="n">old_x2</span> <span class="o">=</span> <span class="n">cent_x2</span><span class="c1"># for a in range(0,num):</span>
+        <span class="n">old_y2</span> <span class="o">=</span> <span class="n">cent_y2</span>
+        <span class="n">cent_x1</span> <span class="o">=</span> <span class="n">indiv_sys1</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cent_y1</span> <span class="o">=</span> <span class="n">indiv_sys1</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cent_x2</span> <span class="o">=</span> <span class="n">indiv_sys2</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cent_y2</span> <span class="o">=</span> <span class="n">indiv_sys2</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">x_vals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">y_vals</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">cap</span> <span class="o">=</span> <span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">agents</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;o&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;m&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">cap</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;p&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span><span class="c1"># for a in range(0,num):</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="n">num</span><span class="p">)</span>
+        <span class="n">delx</span> <span class="o">=</span> <span class="n">cent_x2</span> <span class="o">-</span> <span class="n">cent_x1</span>
+        <span class="n">dely</span> <span class="o">=</span> <span class="n">cent_y2</span> <span class="o">-</span> <span class="n">cent_y1</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">delx</span><span class="o">*</span><span class="n">delx</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">dely</span><span class="o">*</span><span class="n">dely</span><span class="p">))</span>
+        <span class="n">cx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">delx</span><span class="p">,</span><span class="n">norm</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        <span class="n">cy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">dely</span><span class="p">,</span><span class="n">norm</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">delx</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="n">dely</span><span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="c1">#Self Loop</span>
+            <span class="n">x_vals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">y_vals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="p">):</span>
+                <span class="n">randx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                <span class="n">randy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                <span class="n">pointx</span> <span class="o">=</span> <span class="n">cent_x1</span> <span class="o">+</span> <span class="n">r</span><span class="o">*</span><span class="n">randx</span>
+                <span class="n">pointy</span> <span class="o">=</span> <span class="n">cent_y1</span> <span class="o">+</span> <span class="n">r</span><span class="o">*</span><span class="n">randy</span><span class="c1"># for a in range(0,num):</span>
+                <span class="c1">#print(pointx,pointy)</span>
+                <span class="n">x_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pointx</span><span class="p">)</span>
+                <span class="n">y_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pointy</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_vals</span><span class="p">,</span><span class="n">y_vals</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="p">):</span>
+                <span class="n">randx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                <span class="n">randy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                <span class="n">delx</span> <span class="o">=</span> <span class="p">(</span><span class="n">cent_x2</span><span class="o">+</span><span class="p">(</span><span class="n">randx</span><span class="o">*</span><span class="mf">0.5</span><span class="p">)</span><span class="o">+</span><span class="n">num</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">cent_x1</span><span class="o">+</span><span class="p">(</span><span class="n">randx</span><span class="o">*</span><span class="mf">0.5</span><span class="p">)</span><span class="o">+</span><span class="n">num</span><span class="p">)</span>
+                <span class="n">dely</span> <span class="o">=</span> <span class="p">(</span><span class="n">cent_y2</span><span class="o">+</span><span class="p">(</span><span class="n">randy</span><span class="o">*</span><span class="mf">0.5</span><span class="p">)</span><span class="o">+</span><span class="n">num</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">cent_y1</span><span class="o">+</span><span class="p">(</span><span class="n">randy</span><span class="o">*</span><span class="mf">0.5</span><span class="p">)</span><span class="o">+</span><span class="n">num</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">cent_x1</span><span class="o">+</span><span class="p">(</span><span class="n">randx</span><span class="o">*</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">cent_y1</span><span class="o">+</span><span class="p">(</span><span class="n">randy</span><span class="o">*</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="n">delx</span><span class="o">*</span><span class="mf">.8</span><span class="p">),</span> <span class="p">(</span><span class="n">dely</span><span class="o">*</span><span class="mf">.8</span><span class="p">),</span><span class="n">head_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">plt</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

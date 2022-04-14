@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temporal Logic Primer &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Developer Notes" href="developer_notes/index_developer_notes.html" />
+    <link rel="prev" title="Creating Custom Scenarios." href="scenarios.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Temporal Logic Primer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#capability-temporal-logic">Capability Temporal Logic</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tasks">Tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#temporal-time-operators">Temporal (Time) Operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#limit-operator">Limit Operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#boolean-logic">Boolean Logic</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#example-formulas">Example Formulas</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Temporal Logic Primer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/temporal_logic_primer.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="temporal-logic-primer">
+<h1>Temporal Logic Primer<a class="headerlink" href="#temporal-logic-primer" title="Permalink to this headline"></a></h1>
+<p>Each scenario in IITCHS must have a temporal logic (TL) formula which specifies the mission requirements for the agent teams.
+This document gives a brief overview of how to write custom formulas for scenarios.</p>
+<div class="section" id="capability-temporal-logic">
+<h2>Capability Temporal Logic<a class="headerlink" href="#capability-temporal-logic" title="Permalink to this headline"></a></h2>
+<p>IITCHS discretizes time into time steps (e.g. <code class="docutils literal notranslate"><span class="pre">t=0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">....</span></code>). At each time step, we may one or more desired conditions to be
+satisfied by a multi-agent team. In addition, we may want desired conditions to hold over one or more time intervals. For example,</p>
+<ul class="simple">
+<li><p>At the next time step, have 3 agents with cameras in area A</p></li>
+<li><p>Have an agent with a Lidar unit visit area B at least once every 30 minutes.</p></li>
+<li><p>Within the next hour, an agent with both a Lidar and IR sensor should arrive in area D and stay there indefinitely</p></li>
+</ul>
+<p>IITCHS uses a fragment of Temporal Logic called <strong>Capability Temporal Logic</strong> (CaTL) to express these types of requirements
+for specific conditions called <strong>tasks</strong>.</p>
+<div class="section" id="tasks">
+<h3>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline"></a></h3>
+<p>A task is made of three elements:</p>
+<ul class="simple">
+<li><p>A time duration (number of time steps; e.g. 10 time steps)</p></li>
+<li><p>A state or state label (e.g. state A, or state label ‘orange’)</p></li>
+<li><p>One or more counting propositions (explained below).</p></li>
+</ul>
+<p>Tasks are denoted by <code class="docutils literal notranslate"><span class="pre">T(...)</span></code> (examples below).</p>
+<p>A counting proposition is a tuple containing two elements:</p>
+<ul class="simple">
+<li><p>One agent capability</p></li>
+<li><p>A desired number of agents</p></li>
+</ul>
+<p>To give an example, suppose some of our agents have visual cameras (<code class="docutils literal notranslate"><span class="pre">VIS</span></code>), some have Lidar units (<code class="docutils literal notranslate"><span class="pre">LID</span></code>), and some have IR (<code class="docutils literal notranslate"><span class="pre">IR</span></code>) sensors. The list of possible capabilities would be <code class="docutils literal notranslate"><span class="pre">VIS,</span> <span class="pre">LID,</span> <span class="pre">IR</span></code>.
+Some examples of counting propositions would then include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">(IR,4)</span></code> – Four agents with IR sensors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">(VIS,</span> <span class="pre">1)</span></code> – One agent having a visual camera.</p></li>
+</ul>
+<p>Continuing our example, suppose we have four states <code class="docutils literal notranslate"><span class="pre">A,</span> <span class="pre">B,</span> <span class="pre">C,</span> <span class="pre">D</span></code>. States <code class="docutils literal notranslate"><span class="pre">A,</span> <span class="pre">C</span></code> each are labeled <code class="docutils literal notranslate"><span class="pre">blue</span></code>, and states <code class="docutils literal notranslate"><span class="pre">B,</span> <span class="pre">D</span></code> are each labelled <code class="docutils literal notranslate"><span class="pre">red</span></code>. Then some examples of tasks would include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">T(5,</span> <span class="pre">A,</span> <span class="pre">{(VIS,</span> <span class="pre">1)})</span></code> – 1 agent with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability present in state A for 5 consecutive time steps</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T(15,</span> <span class="pre">red,</span> <span class="pre">{(LID,</span> <span class="pre">3)}</span></code> – 3 agents with the <code class="docutils literal notranslate"><span class="pre">LID</span></code> capability simultaneously present in each state labelled <code class="docutils literal notranslate"><span class="pre">red</span></code> (i.e. states <code class="docutils literal notranslate"><span class="pre">B</span></code> and <code class="docutils literal notranslate"><span class="pre">D</span></code>) for 15 consecutive time steps</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T(18,</span> <span class="pre">blue,</span> <span class="pre">{(LID,</span> <span class="pre">2),</span> <span class="pre">(IR,6)})</span></code> – 2 agents with the <code class="docutils literal notranslate"><span class="pre">LID</span></code> capability and 6 agents with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability present in the <code class="docutils literal notranslate"><span class="pre">blue</span></code> labelled states for 18 consecutive seconds.</p></li>
+</ul>
+<p>A task with duration <code class="docutils literal notranslate"><span class="pre">d</span></code> is “satisfied” at time <code class="docutils literal notranslate"><span class="pre">t</span></code> if its specified conditions are true for all time steps in <code class="docutils literal notranslate"><span class="pre">[t,t+d]</span></code>. For example, the task <code class="docutils literal notranslate"><span class="pre">T(5,</span> <span class="pre">D,</span> <span class="pre">{(VIS,3)})</span></code> is satisfied at time <code class="docutils literal notranslate"><span class="pre">t</span></code> if (and only if) state D contains at least three agents with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability for all time steps in the interval <code class="docutils literal notranslate"><span class="pre">[t,</span> <span class="pre">t+5]</span></code>. When a task contains a state label (e.g. <code class="docutils literal notranslate"><span class="pre">blue</span></code> or <code class="docutils literal notranslate"><span class="pre">red</span></code>), the conditions must hold <em>for all states with that label</em> in order for the task to be satisfied. As a further example, the task <code class="docutils literal notranslate"><span class="pre">T(7,</span> <span class="pre">red,</span> <span class="pre">{(IR,2)})</span></code> is satisfied if (and only if) all red states each contain at least 2 agents with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability for all time steps in <code class="docutils literal notranslate"><span class="pre">[t,</span> <span class="pre">t+7]</span></code>.</p>
+<p>Finally, note that it is possible for some agents to have multiple capabilities; e.g. an agent could have both a visual camera and an IR sensor. IITCHS takes into account each agent’s individual set of capabilities when creating a plan to satisfy all required tasks. Having agents with multiple capabilities simply gives the IITCHS algorithm more flexibility in creating a final plan.</p>
+</div>
+<div class="section" id="temporal-time-operators">
+<h3>Temporal (Time) Operators<a class="headerlink" href="#temporal-time-operators" title="Permalink to this headline"></a></h3>
+<p>Temporal operators are used to specify time-dependent requirements such as “Satisfy task X within the next 30 time steps”.
+The three temporal operators are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">G[a,b]</span></code> – “Always” (time-bounded)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[a,b]</span></code> – “Eventually” (time-bounded)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">U[a,b]</span></code> – “Until” (time-bounded)</p></li>
+</ul>
+<p>Given a task <code class="docutils literal notranslate"><span class="pre">T(...)</span></code> and a time <code class="docutils literal notranslate"><span class="pre">t0</span></code>, the formula <code class="docutils literal notranslate"><span class="pre">G[a,b]</span> <span class="pre">T(...)</span></code> holds true at <code class="docutils literal notranslate"><span class="pre">t0</span></code> if (and only if) the task <code class="docutils literal notranslate"><span class="pre">T(...)</span></code> is satisfied at all time steps in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,</span> <span class="pre">t0+b]</span></code>.
+As an example, for the formula <code class="docutils literal notranslate"><span class="pre">G[2,6]</span> <span class="pre">T(3,</span> <span class="pre">B,</span> <span class="pre">{(LID,2)})</span></code> to hold true at time <code class="docutils literal notranslate"><span class="pre">t0</span></code>, there would need to be at least 2 agents with capability <code class="docutils literal notranslate"><span class="pre">LID</span></code> in state <code class="docutils literal notranslate"><span class="pre">B</span></code> for all time steps in the interval <code class="docutils literal notranslate"><span class="pre">[t0+2,</span> <span class="pre">t0+9]</span></code>. Notice that the end of the interval is <code class="docutils literal notranslate"><span class="pre">t0+9</span></code> rather than <code class="docutils literal notranslate"><span class="pre">t0+6</span></code>. This is because the task duration is 3 time steps long, implying that the conditions need to be satisfied from <code class="docutils literal notranslate"><span class="pre">t0+2</span></code> to <code class="docutils literal notranslate"><span class="pre">t0+6+3</span> <span class="pre">=</span> <span class="pre">t0+9</span></code>.</p>
+<p>Given a task <code class="docutils literal notranslate"><span class="pre">T(...)</span></code> and a time <code class="docutils literal notranslate"><span class="pre">t0</span></code>, the formula <code class="docutils literal notranslate"><span class="pre">F[a,b]</span> <span class="pre">T(...)</span></code> holds true at <code class="docutils literal notranslate"><span class="pre">t0</span></code> if (and only if) there exists at least one time step <code class="docutils literal notranslate"><span class="pre">t*</span></code> in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,</span> <span class="pre">t0+b]</span></code> where <code class="docutils literal notranslate"><span class="pre">T(...)</span></code> is satisfied.
+As an example, for the formula <code class="docutils literal notranslate"><span class="pre">F[5,50]</span> <span class="pre">T(4,</span> <span class="pre">blue,</span> <span class="pre">{(VIS,</span> <span class="pre">1)})</span></code> to hold true at time <code class="docutils literal notranslate"><span class="pre">t0</span></code>, there would need to be at least one time step <code class="docutils literal notranslate"><span class="pre">t</span></code> between 5 and 50 such that each blue-labelled state contained one agent with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability for the interval <code class="docutils literal notranslate"><span class="pre">[t,</span> <span class="pre">t+4]</span></code>. If each blue labelled state contained one agent with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability for all times in the interval <code class="docutils literal notranslate"><span class="pre">[26,30]</span></code>, the formula would be satisfied.</p>
+<p>Given two tasks <code class="docutils literal notranslate"><span class="pre">T1(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">T2(...)</span></code> and a time <code class="docutils literal notranslate"><span class="pre">t0</span></code>, the formula <code class="docutils literal notranslate"><span class="pre">T1(...)U[a,b]T2(...)</span></code> holds true if (and only if) there exists a time <code class="docutils literal notranslate"><span class="pre">t*</span></code> in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,</span> <span class="pre">t0+b]</span></code> where <code class="docutils literal notranslate"><span class="pre">T2(...)</span></code> is satisfied and for all time steps <code class="docutils literal notranslate"><span class="pre">t**</span></code> in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,t*-1]</span></code> <code class="docutils literal notranslate"><span class="pre">T1(...)</span></code> is satisfied. In other words, starting at time <code class="docutils literal notranslate"><span class="pre">t0+a</span></code>, <code class="docutils literal notranslate"><span class="pre">T1(...)</span></code> must be satisfied <em>until</em> <code class="docutils literal notranslate"><span class="pre">T2(...)</span></code> is satisfied, and <code class="docutils literal notranslate"><span class="pre">T2(...)</span></code> must be satisfied by time <code class="docutils literal notranslate"><span class="pre">t0+b</span></code>. As an example, for the formula <code class="docutils literal notranslate"><span class="pre">T(1,blue,{VIS,1})U[5,10]T(3,red,{IR,2})</span></code> to hold true at time 0, there must be some time step <code class="docutils literal notranslate"><span class="pre">t</span></code> between 5 and 10, such that each red-labelled state contained two agents with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability for the interval <code class="docutils literal notranslate"><span class="pre">[t,t+3]</span></code>. At every time step in the interval <code class="docutils literal notranslate"><span class="pre">[5,t-1]</span></code> there must be at least one agent with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability or each one time-step interval. If each red-labelled state contained two agents with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability for all times in the interval <code class="docutils literal notranslate"><span class="pre">[7,8,9]</span></code> and each blue-labelled state contained one agent with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability for all times in the interval <code class="docutils literal notranslate"><span class="pre">[5,6]</span></code>, the formula would be satisfied.</p>
+<p>The operators <code class="docutils literal notranslate"><span class="pre">F</span></code>, <code class="docutils literal notranslate"><span class="pre">G</span></code>, and <code class="docutils literal notranslate"><span class="pre">U</span></code> can be combined in sequence:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">G[a,b]</span> <span class="pre">F[c,d]</span></code> – “Always eventually” operator. Used for recurring tasks, e.g. <code class="docutils literal notranslate"><span class="pre">G[0,100]</span> <span class="pre">F[0,10]</span> <span class="pre">T(1,</span> <span class="pre">B,</span> <span class="pre">{(IR,1)})</span></code> means “Over a time window of 100 time steps, an agent with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability must visit state <code class="docutils literal notranslate"><span class="pre">B</span></code> one out of every 10 time steps”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[a,b]</span> <span class="pre">G[c,d]</span></code> – “Eventually always” operator. Used for ensuring agents eventually visit a state/states and remain there.</p></li>
+</ul>
+</div>
+<div class="section" id="limit-operator">
+<h3>Limit Operator<a class="headerlink" href="#limit-operator" title="Permalink to this headline"></a></h3>
+<p>The Limit operator allows creating upper bounds on the number of capabilities within a given state or set of states. The Limit operator is denoted by <code class="docutils literal notranslate"><span class="pre">L(...)</span></code> and consists of two elements:</p>
+<ul class="simple">
+<li><p>A state or state label</p></li>
+<li><p>A counting proposition</p></li>
+</ul>
+<p>To give some examples,</p>
+<ul class="simple">
+<li><p>The formula <code class="docutils literal notranslate"><span class="pre">L(B,</span> <span class="pre">{(LID,</span> <span class="pre">2)})</span></code> is satisfied at time <code class="docutils literal notranslate"><span class="pre">t</span></code> if (and only if) there are no more than 2 agents with the <code class="docutils literal notranslate"><span class="pre">LID</span></code> capability in state <code class="docutils literal notranslate"><span class="pre">B</span></code>.</p></li>
+<li><p>The formula <code class="docutils literal notranslate"><span class="pre">L(blue,</span> <span class="pre">{(IR,</span> <span class="pre">3),</span> <span class="pre">(VIS,</span> <span class="pre">2)})</span></code> is satisfied at time <code class="docutils literal notranslate"><span class="pre">t</span></code> if (and only if) there are no more than 3 agents with the <code class="docutils literal notranslate"><span class="pre">IR</span></code> capability and no more than 2 agents with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability in each of the blue-labelled states at time <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p></li>
+</ul>
+<p>Limit operators can be combined with all of the operators previously discussed:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">G[a,b]</span> <span class="pre">L(C,</span> <span class="pre">{(VIS,</span> <span class="pre">1)})</span></code> – For all time steps in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,</span> <span class="pre">t0+b]</span></code>, there must be no more than one agent with the <code class="docutils literal notranslate"><span class="pre">VIS</span></code> capability in state <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[a,b]</span> <span class="pre">G[0,d]</span> <span class="pre">L(red,</span> <span class="pre">{(LID,5)})</span></code> – There must eventually exist a time step <code class="docutils literal notranslate"><span class="pre">t</span></code> in the interval <code class="docutils literal notranslate"><span class="pre">[t0+a,</span> <span class="pre">t0+b]</span></code> such that at least 5 agents with the <code class="docutils literal notranslate"><span class="pre">LID</span></code> capability are in each of the red-labelled states for <code class="docutils literal notranslate"><span class="pre">d</span></code> time steps (i.e. the interval <code class="docutils literal notranslate"><span class="pre">[t+0,</span> <span class="pre">t+d]</span></code>).</p></li>
+</ul>
+</div>
+<div class="section" id="boolean-logic">
+<h3>Boolean Logic<a class="headerlink" href="#boolean-logic" title="Permalink to this headline"></a></h3>
+<p>Smaller CaTL formula can be combined together into larger formula using the Boolean operators AND (<code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code>) and OR (<code class="docutils literal notranslate"><span class="pre">||</span></code>). For example, <code class="docutils literal notranslate"><span class="pre">T(4,</span> <span class="pre">A,</span> <span class="pre">{(IR,</span> <span class="pre">1)}</span> <span class="pre">||</span> <span class="pre">T(2,</span> <span class="pre">B,</span> <span class="pre">{(VIS,3)})</span></code> means that either the first or second task should be satisfied (at a given time <code class="docutils literal notranslate"><span class="pre">t</span></code>).</p>
+<p>Note that the Boolean operator NOT (¬) is not natively included in CaTL. This is because negation of a formula requires being able to negate a task. There are many ways to negate a task (not enough agents, not enough duration, etc.). If we define the Limit operator as the negation of a task, then NOT can be included in CaTL, as well as any other related logical operators (e.g., Implication (A⇒B), equivalent to ¬(A&amp;&amp;¬B)) can be included. <strong>This is not yet implemented.</strong></p>
+</div>
+</div>
+<div class="section" id="example-formulas">
+<h2>Example Formulas<a class="headerlink" href="#example-formulas" title="Permalink to this headline"></a></h2>
+<p><strong>Example 1:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="p">{(</span><span class="n">A1</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span> <span class="o">&amp;&amp;</span> <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="p">{(</span><span class="n">A1</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span> <span class="o">&amp;&amp;</span> <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="p">{(</span><span class="n">A1</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span> <span class="o">&amp;&amp;</span> <span class="n">F</span><span class="p">[</span><span class="mi">35</span><span class="p">,</span><span class="mi">60</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="p">{(</span><span class="n">A2</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span> <span class="o">&amp;&amp;</span> <span class="n">F</span><span class="p">[</span><span class="mi">30</span><span class="p">,</span><span class="mi">60</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="p">{(</span><span class="n">A2</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span> <span class="o">&amp;&amp;</span> <span class="n">F</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span><span class="mi">45</span><span class="p">]</span> <span class="n">T</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="p">{(</span><span class="n">A2</span><span class="p">,</span><span class="mi">3</span><span class="p">)})</span>
+</pre></div>
+</div>
+<p>This consists of 6 subformulas all combined together with the AND operator.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">F[0,</span> <span class="pre">35]</span> <span class="pre">T(3,</span> <span class="pre">A,</span> <span class="pre">{(A1,3)})</span></code>: Within the first 35 time steps (the initial time t0 is implied to be zero), three agents with capability <code class="docutils literal notranslate"><span class="pre">A1</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">A</span></code> for at least three consecutive time steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[0,</span> <span class="pre">30]</span> <span class="pre">T(3,</span> <span class="pre">B,</span> <span class="pre">{(A1,3)})</span></code>: Within the first 30 time steps, three agents with capability <code class="docutils literal notranslate"><span class="pre">A1</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">B</span></code> for at least three consecutive time steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[0,30]</span> <span class="pre">T(5,</span> <span class="pre">C,</span> <span class="pre">{(A1,3)})</span></code>: Within the first 30 time steps, three agents with capability <code class="docutils literal notranslate"><span class="pre">A1</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">C</span></code> for at least five consecutive time steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[35,60]</span> <span class="pre">T(5,</span> <span class="pre">A,</span> <span class="pre">{(A2,3)})</span></code>: Between time steps 35 and 60 (the initial time t0 is implied to be zero), three agents with capability <code class="docutils literal notranslate"><span class="pre">A2</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">A</span></code> for at least five consecutive time steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[30,60]</span> <span class="pre">T(5,</span> <span class="pre">B,</span> <span class="pre">{(A2,3)})</span></code>: Between time steps 30 and 60, three agents with capability <code class="docutils literal notranslate"><span class="pre">A2</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">B</span></code> for at least five consecutive time steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F[15,45]</span> <span class="pre">T(5,</span> <span class="pre">C,</span> <span class="pre">{(A2,3)})</span></code>: Between time steps 15 and 45, three agents with capability <code class="docutils literal notranslate"><span class="pre">A2</span></code> must simultaneously visit state <code class="docutils literal notranslate"><span class="pre">C</span></code> for at least five consecutive time steps.</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scenarios.html" class="btn btn-neutral float-left" title="Creating Custom Scenarios." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="developer_notes/index_developer_notes.html" class="btn btn-neutral float-right" title="Developer Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

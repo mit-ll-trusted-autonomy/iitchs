@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The PuLP Modeler &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="IITCHS Source Code" href="../source_code_index.html" />
+    <link rel="prev" title="Developer Notes" href="index_developer_notes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index_developer_notes.html">Developer Notes</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">PuLP Modeler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#official-pulp-resources">Official PuLP Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-on-specific-solvers">Notes on Specific Solvers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gurobi-cmd">GUROBI_CMD</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index_developer_notes.html">Developer Notes</a> &raquo;</li>
+      <li>The PuLP Modeler</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_notes/pulp.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="the-pulp-modeler">
+<h1>The PuLP Modeler<a class="headerlink" href="#the-pulp-modeler" title="Permalink to this headline"></a></h1>
+<p>PuLP is an LP modeler that can be used to create (mixed-integer) linear programs, and then solve them using a variety of different solvers as the backend.
+IITCHS uses PuLP under the hood to create its MILP problems. This gives it the flexibility to switch between solvers specified by the user
+at runtime.</p>
+<div class="section" id="official-pulp-resources">
+<h2>Official PuLP Resources<a class="headerlink" href="#official-pulp-resources" title="Permalink to this headline"></a></h2>
+<p>If you have questions about using PuLP, the following official resources are available:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://coin-or.github.io/pulp/index.html">Official documentation</a></p></li>
+<li><p><a class="reference external" href="https://github.com/coin-or/pulp/discussions">Github Discussions page</a></p></li>
+<li><p><a class="reference external" href="https://groups.google.com/g/pulp-or-discuss">Google Group</a> (somewhat outdated, but useful for searching old answers. Use the Github Discussions page to ask new questions.)</p></li>
+</ul>
+<p>The official PuLP documentation is unfortunately not very clear on certain details. The notes below contain additional information
+on using PuLP that is helpful to know when working on the IITCHS codebase.</p>
+</div>
+<div class="section" id="notes-on-specific-solvers">
+<h2>Notes on Specific Solvers<a class="headerlink" href="#notes-on-specific-solvers" title="Permalink to this headline"></a></h2>
+<div class="section" id="gurobi-cmd">
+<h3>GUROBI_CMD<a class="headerlink" href="#gurobi-cmd" title="Permalink to this headline"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">GUROBI_CMD</span></code> option calls the Gurobi command-line solver directly. Be aware that some attributes of the PuLP solver object do not get passed to
+the <code class="docutils literal notranslate"><span class="pre">GUROBI_CMD</span></code> solver (e.g. the time limit). For best results, set the Gurobi parameters directly using the methods outlined below.</p>
+<p><strong>Setting general Gurobi parameters:</strong> General Gurobi parameters can be set using the <code class="docutils literal notranslate"><span class="pre">options</span></code> keyword argument when creating the solver object:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">options</span></code> variable must be a list of tuples, each tuple having length 2.</p></li>
+<li><p>The first entry of a tuple in the <code class="docutils literal notranslate"><span class="pre">options</span></code> list must be the string name of the Gurobi parameter (e.g. “OutputFlag”). You can find a list of the parameter names
+at the Gurobi <a class="reference external" href="https://www.gurobi.com/documentation/9.1/refman/parameters.html">Parameters</a> webpage.</p></li>
+<li><p>The second entry of a tuple in the <code class="docutils literal notranslate"><span class="pre">options</span></code> list must be the value the parameter should have (e.g. 0 for “OutputFlag”).</p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pulp</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">[</span>
+	<span class="p">(</span><span class="s2">&quot;OutputFlag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+	<span class="p">(</span><span class="s2">&quot;TimeLimit&quot;</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<p>A longer example can be found at <a class="reference external" href="https://groups.google.com/g/pulp-or-discuss/c/kzepw7kuFSA/m/f47LdLsxBAAJ">this link</a>.</p>
+<p><strong>Setting the time limit:</strong> Use the <code class="docutils literal notranslate"><span class="pre">options</span></code> keyword argument to set the “TimeLimit” parameter to the desired time limit (in seconds). <strong>WARNING:</strong> A PuLP solver object
+(e.g. <code class="docutils literal notranslate"><span class="pre">solver</span> <span class="pre">=</span> <span class="pre">pulp.GUROBI_CMD()</span></code>) does have the attribute <code class="docutils literal notranslate"><span class="pre">timeLimit</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">solver.timeLimit</span></code>), but setting this attribute doesn’t have any effect when using a
+<code class="docutils literal notranslate"><span class="pre">GUROBI_CMD</span></code> solver. Use the <code class="docutils literal notranslate"><span class="pre">options</span></code> method instead.</p>
+<p><strong>Setting the verbosity:</strong> Use the <code class="docutils literal notranslate"><span class="pre">options</span></code> keyword argument to set the “OutputFlag” parameter. A value of 1 implies full verbosity, and a value of 0 implies all output is turned off. You can see Gurobi’s documentation for other verbosity parameters.</p>
+<p><strong>Setting the number of threads:</strong> The number of threads can be set using the <code class="docutils literal notranslate"><span class="pre">threads</span></code> keyword argument when creating the solver object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pulp</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, you can use the <code class="docutils literal notranslate"><span class="pre">options</span></code> keyword argument to pass in the “Threads” option value</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pulp</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">[</span>
+	<span class="p">(</span><span class="s2">&quot;Threads&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">])</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index_developer_notes.html" class="btn btn-neutral float-left" title="Developer Notes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../source_code_index.html" class="btn btn-neutral float-right" title="IITCHS Source Code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

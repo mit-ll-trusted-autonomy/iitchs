@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catl_planning.kml_gen &mdash; IITCHS Base  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> IITCHS Base
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">IITCHS Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scenarios.html">Custom Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../temporal_logic_primer.html">Temporal Logic Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_notes/index_developer_notes.html">Developer Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source_code_index.html">Source Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">IITCHS Base</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>catl_planning.kml_gen</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for catl_planning.kml_gen</h1><div class="highlight"><pre>
+<span></span><span class="c1"># DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.</span>
+
+<span class="c1"># This material is based upon work supported by the Under Secretary of Defense for </span>
+<span class="c1"># Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any </span>
+<span class="c1"># opinions, findings, conclusions or recommendations expressed in this material </span>
+<span class="c1"># are those of the author(s) and do not necessarily reflect the views of the Under </span>
+<span class="c1"># Secretary of Defense for Research and Engineering.</span>
+
+<span class="c1"># (C) 2021 Massachusetts Institute of Technology.</span>
+
+<span class="c1"># Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)</span>
+
+<span class="c1"># The software/firmware is provided to you on an As-Is basis</span>
+
+<span class="c1"># Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS </span>
+<span class="c1"># Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. </span>
+<span class="c1"># Government rights in this work are defined by DFARS 252.227-7013 or DFARS </span>
+<span class="c1"># 252.227-7014 as detailed above. Use of this work other than as specifically </span>
+<span class="c1"># authorized by the U.S. Government may violate any copyrights that exist in this </span>
+<span class="c1"># work.</span>
+
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">simplekml</span> <span class="k">as</span> <span class="nn">simplekml</span>
+<span class="kn">from</span> <span class="nn">simplekml</span> <span class="kn">import</span> <span class="n">Kml</span><span class="p">,</span> <span class="n">Snippet</span><span class="p">,</span> <span class="n">Types</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">lomap.classes.ts</span> <span class="kn">import</span> <span class="n">Ts</span>
+<span class="c1">###############################################################################</span>
+<span class="c1">#This class definition creates a struct target_data structure</span>
+<span class="k">class</span> <span class="nc">empty_struct</span><span class="p">:</span>
+	<span class="k">pass</span>
+
+<span class="c1">##############################################################################</span>
+
+<div class="viewcode-block" id="gen_kml_file"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.kml_gen.gen_kml_file">[docs]</a><span class="k">def</span> <span class="nf">gen_kml_file</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">plan_to_draw</span><span class="p">):</span>
+
+    <span class="c1">#points = empty_struct()</span>
+    <span class="n">new_agent_names</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;A1&quot;</span><span class="p">],[</span><span class="s2">&quot;A2&quot;</span><span class="p">],[</span><span class="s2">&quot;A3&quot;</span><span class="p">],[</span><span class="s2">&quot;A4&quot;</span><span class="p">],[</span><span class="s2">&quot;B1&quot;</span><span class="p">],[</span><span class="s2">&quot;B2&quot;</span><span class="p">],[</span><span class="s2">&quot;B3&quot;</span><span class="p">],[</span><span class="s2">&quot;B4&quot;</span><span class="p">],[</span><span class="s2">&quot;C1&quot;</span><span class="p">],[</span><span class="s2">&quot;C2&quot;</span><span class="p">],[</span><span class="s2">&quot;C3&quot;</span><span class="p">]]</span>
+    <span class="n">agent_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">,</span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="s2">&quot;2&quot;</span><span class="p">,</span><span class="s2">&quot;3&quot;</span><span class="p">,</span><span class="s2">&quot;4&quot;</span><span class="p">,</span><span class="s2">&quot;5&quot;</span><span class="p">,</span><span class="s2">&quot;6&quot;</span><span class="p">,</span><span class="s2">&quot;7&quot;</span><span class="p">,</span><span class="s2">&quot;8&quot;</span><span class="p">,</span><span class="s2">&quot;9&quot;</span><span class="p">,</span><span class="s2">&quot;10&quot;</span><span class="p">]</span>
+    <span class="n">agent_color</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ff00ff00&#39;</span><span class="p">,</span><span class="s1">&#39;ff00ff00&#39;</span><span class="p">,</span><span class="s1">&#39;ff00ff00&#39;</span><span class="p">,</span><span class="s1">&#39;ff00ff00&#39;</span><span class="p">,</span><span class="s1">&#39;551400ff&#39;</span><span class="p">,</span><span class="s1">&#39;551400ff&#39;</span><span class="p">,</span><span class="s1">&#39;551400ff&#39;</span><span class="p">,</span><span class="s1">&#39;551400ff&#39;</span><span class="p">,</span><span class="s1">&#39;55000000&#39;</span><span class="p">,</span><span class="s1">&#39;55000000&#39;</span><span class="p">,</span><span class="s1">&#39;55000000&#39;</span><span class="p">]</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">empty_struct</span><span class="p">()</span>
+    <span class="n">num_agents</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">time_step_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">150</span><span class="o">*</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">corner_coor</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">corner_coor</span>
+    <span class="n">alt</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="n">scale_to_m_y</span> <span class="o">=</span> <span class="mf">85.8000</span><span class="c1">#71.666667</span>
+    <span class="n">scale_to_m_x</span> <span class="o">=</span> <span class="mf">73.0000</span><span class="c1">#52.142857</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="c1"># Create the KML document</span>
+    <span class="n">kml</span> <span class="o">=</span> <span class="n">Kml</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;CaTL&quot;</span><span class="p">,</span> <span class="nb">open</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">kml</span><span class="o">.</span><span class="n">newdocument</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+    <span class="n">doc</span><span class="o">.</span><span class="n">lookat</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="o">-</span><span class="mf">71.0000000000</span>
+    <span class="n">doc</span><span class="o">.</span><span class="n">lookat</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="mf">42.33</span>
+    <span class="n">doc</span><span class="o">.</span><span class="n">lookat</span><span class="o">.</span><span class="n">range</span> <span class="o">=</span> <span class="mf">5000.00</span>
+
+    <span class="c1"># Create a folder</span>
+    <span class="n">fol</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">newfolder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Tracks&#39;</span><span class="p">)</span>
+
+
+    <span class="c1">#Get the region points and convert them to lat_long</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">Ts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">ts_filename</span><span class="p">)</span>
+    <span class="n">region_bounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">region_color</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">region_label</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">num_states</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;pol&#39;</span>
+
+    <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
+            <span class="n">lat_long_bounds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">state_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)])</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s1">&#39;prop&#39;</span><span class="p">]</span>
+            <span class="n">prop_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+            <span class="n">len_b</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prop_str</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">prop_str</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="n">len_b</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+            <span class="n">num_states</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_points</span><span class="p">):</span>
+                <span class="n">lat</span><span class="p">,</span><span class="n">long</span> <span class="o">=</span> <span class="n">point_transform</span><span class="p">((</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span><span class="n">corner_coor</span><span class="p">,</span><span class="n">scale_to_m_x</span><span class="p">,</span><span class="n">scale_to_m_y</span><span class="p">)</span>
+                <span class="n">lat_long_bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">long</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="mi">500</span><span class="p">))</span>
+            <span class="n">pol_var</span> <span class="o">=</span> <span class="n">value</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">state_int</span><span class="p">)</span>
+            <span class="c1">#Generate polygon map of regions:</span>
+            <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">kml</span><span class="o">.</span><span class="n">newpolygon</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                             <span class="n">outerboundaryis</span><span class="o">=</span><span class="n">lat_long_bounds</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;white&#39;</span><span class="p">:</span>
+                <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">polystyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;5514ffff&#39;</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;yellow&#39;</span><span class="p">:</span>
+                <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">polystyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;5514f0ff&#39;</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;red&#39;</span><span class="p">:</span>
+                <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">polystyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;551400ff&#39;</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s1">&#39;black&#39;</span><span class="p">:</span>
+                <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">polystyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;55140000&#39;</span>
+
+            <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">polystyle</span><span class="o">.</span><span class="n">outline</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="nb">vars</span><span class="p">()[</span><span class="n">pol_var</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">labelstyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">simplekml</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">white</span>
+            <span class="c1">#vars()[pol_var].gxtimespan.begin = current_time</span>
+            <span class="c1">#vars()[pol_var].gxtimespan.end = current_time + timedelta(seconds=time_step_size)</span>
+
+    <span class="c1">#Loop Starts here:</span>
+
+    <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">plan_to_draw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">label_name</span> <span class="o">=</span> <span class="n">new_agent_names</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">agent</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">agent_color_val</span> <span class="o">=</span> <span class="n">agent_color</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">agent</span><span class="p">)]</span>
+        <span class="c1">#agent = agent_name</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">pts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">when</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">cx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cy</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">plan_to_draw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">cx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cx</span><span class="p">)</span>
+            <span class="n">cy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cy</span><span class="p">)</span>
+            <span class="n">cx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plan_to_draw</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">cy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plan_to_draw</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            
+        <span class="n">points</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cx</span> <span class="k">if</span> <span class="n">i</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cy</span> <span class="k">if</span> <span class="n">i</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">time_step_size</span><span class="p">)</span>
+
+        <span class="c1">#print(agent)</span>
+        
+        <span class="c1">#if len(points.x) &gt; 1000:</span>
+         <span class="c1">#   save_length = int(len(points.x)*.6)</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    save_length = int(len(points.x))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">x</span><span class="p">)):</span>
+	        <span class="n">x</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	        <span class="c1">#print(x)</span>
+	        <span class="n">y</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	        <span class="c1">#print(y)</span>
+	        <span class="n">lat</span><span class="p">,</span><span class="n">long</span> <span class="o">=</span> <span class="n">point_transform</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span><span class="n">corner_coor</span><span class="p">,</span><span class="n">scale_to_m_x</span><span class="p">,</span><span class="n">scale_to_m_y</span><span class="p">)</span>
+	        <span class="n">points</span><span class="o">.</span><span class="n">pts</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">long</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="n">alt</span><span class="p">])</span>
+	        <span class="n">current_time</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">time_step_size</span><span class="p">)</span>
+	        <span class="n">points</span><span class="o">.</span><span class="n">when</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;T&quot;</span><span class="o">+</span><span class="n">current_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;Z&quot;</span><span class="p">)</span>
+
+
+        <span class="n">agent_info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;coord&quot;</span> <span class="p">:</span> <span class="n">points</span><span class="o">.</span><span class="n">pts</span><span class="p">,</span>
+                   	<span class="s2">&quot;when&quot;</span> <span class="p">:</span> <span class="n">points</span><span class="o">.</span><span class="n">when</span>
+        <span class="p">}</span>
+
+
+        <span class="c1"># Create the trajectory</span>
+        <span class="n">trk</span> <span class="o">=</span> <span class="n">fol</span><span class="o">.</span><span class="n">newgxtrack</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">newwhen</span><span class="p">(</span><span class="n">agent_info</span><span class="p">[</span><span class="s2">&quot;when&quot;</span><span class="p">])</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">newgxcoord</span><span class="p">(</span><span class="n">agent_info</span><span class="p">[</span><span class="s2">&quot;coord&quot;</span><span class="p">])</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">altitudemode</span> <span class="o">=</span> <span class="s1">&#39;relativeToGround&#39;</span>
+        <span class="c1"># Styling</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">normalstyle</span><span class="o">.</span><span class="n">iconstyle</span><span class="o">.</span><span class="n">icon</span><span class="o">.</span><span class="n">href</span> <span class="o">=</span> <span class="s1">&#39;http://maps.google.com/mapfiles/kml/shapes/airports.png&#39;</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">normalstyle</span><span class="o">.</span><span class="n">linestyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;00000000&#39;</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">normalstyle</span><span class="o">.</span><span class="n">linestyle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">highlightstyle</span><span class="o">.</span><span class="n">iconstyle</span><span class="o">.</span><span class="n">icon</span><span class="o">.</span><span class="n">href</span> <span class="o">=</span> <span class="s1">&#39;http://maps.google.com/mapfiles/kml/shapes/airports.png&#39;</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">highlightstyle</span><span class="o">.</span><span class="n">iconstyle</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">1.2</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">highlightstyle</span><span class="o">.</span><span class="n">linestyle</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">agent_color_val</span>
+        <span class="n">trk</span><span class="o">.</span><span class="n">stylemap</span><span class="o">.</span><span class="n">highlightstyle</span><span class="o">.</span><span class="n">linestyle</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">8</span>
+
+
+
+    <span class="c1"># Saving</span>
+    <span class="n">kml</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">save_filename</span><span class="o">+</span><span class="s2">&quot;.kml&quot;</span><span class="p">)</span></div>
+    <span class="c1">#kml.savekmz(os.path.splitext(__file__)[0] + &quot;.kmz&quot;) # uncomment to save to kmz</span>
+    <span class="c1">#print kml.kml() # uncomment to see the kml printed to screen</span>
+    
+
+<div class="viewcode-block" id="txt_output"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.kml_gen.txt_output">[docs]</a><span class="k">def</span> <span class="nf">txt_output</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">the_plan</span><span class="p">):</span> 
+    
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">the_plan</span><span class="p">)):</span>
+        <span class="n">valsx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">valsy</span> <span class="o">=</span> <span class="p">[]</span>   
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">the_plan</span><span class="p">[</span><span class="n">a</span><span class="p">])):</span>
+            <span class="n">valsx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_plan</span><span class="p">[</span><span class="n">a</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">valsy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">the_plan</span><span class="p">[</span><span class="n">a</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+		    
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">output_path</span><span class="o">+</span><span class="s1">&#39;/txt_files/&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;x.txt&#39;</span><span class="p">,</span><span class="n">valsx</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">output_path</span><span class="o">+</span><span class="s1">&#39;/txt_files/&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;y.txt&#39;</span><span class="p">,</span><span class="n">valsy</span><span class="p">)</span></div>
+        
+
+<div class="viewcode-block" id="point_transform"><a class="viewcode-back" href="../../catl_planning.html#catl_planning.kml_gen.point_transform">[docs]</a><span class="k">def</span> <span class="nf">point_transform</span><span class="p">(</span><span class="n">point</span><span class="p">,</span><span class="n">origin</span><span class="p">,</span><span class="n">scale_to_m_x</span><span class="p">,</span><span class="n">scale_to_m_y</span><span class="p">,</span><span class="n">aprox_m_per_deg</span><span class="o">=</span><span class="mf">111134.75</span><span class="p">):</span>
+	<span class="n">long</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">scale_to_m_x</span><span class="p">,</span><span class="n">aprox_m_per_deg</span><span class="p">)</span><span class="o">+</span><span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">scale_to_m_y</span><span class="p">,</span><span class="n">aprox_m_per_deg</span><span class="p">)</span><span class="o">+</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="k">return</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="n">long</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 by the contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
