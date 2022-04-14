@@ -1,5 +1,7 @@
 # IITCHS Base
 
+[![IITCHS stable documentation](https://img.shields.io/badge/docs-stable-blue)](https://mit-ll-trusted-autonomy.github.io/iitchs/)
+
 A high-level planner for coordinating large, heterogeneous teams of autonomous agents.
 
 ## Overview
