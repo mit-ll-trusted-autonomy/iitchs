@@ -1,5 +1,7 @@
 # IITCHS Base
 
+[![IITCHS stable documentation](https://img.shields.io/badge/docs-stable-blue)](https://mit-ll-trusted-autonomy.github.io/iitchs/)
+
 A high-level planner for coordinating large, heterogeneous teams of autonomous agents.
 
 ## Overview
@@ -16,7 +18,7 @@ IITCHS is designed to perform well on problems that
 * Require plans that will be executed on the order of hours to days
 
 
-IITCHs may not be the best match for problems that
+IITCHS may not be the best match for problems that
 
 * Require rapidly changing plans in highly uncertain environments
 * Require solutions on the order of subseconds to seconds
