@@ -28,7 +28,7 @@ IITCHs may not be the best match for problems that
 
 <!--\[INSERT HERE WHEN WE HAVE PUBLIC GITHUB REPO URL\]-->
 
-Please consider citing the following papers that establish the theoretical basis for IITCHS:
+If you use this code in your work, please consider citing the following papers:
 
 [Scalable and Robust Algorithms for Task-Based Coordination From High-Level Specifications (ScRATCHeS)](https://ieeexplore.ieee.org/document/9663414)
 
